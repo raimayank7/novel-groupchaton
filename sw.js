@@ -9,7 +9,7 @@
    It replaces the old "Infinity App" service worker of this address: its caches are removed when this one starts.
    (Records saved by the old Infinity App are in IndexedDB/localStorage, never in these caches, so they are not touched.)
    Designed & Developed by Nivesh Sahayak. See LICENSE. */
-var VERSION = '2026-11-05.31a972d';
+var VERSION = '2026-11-08.622ccc0';
 var SHELL = 'gcr-shell-' + VERSION, CHAPTERS = 'gcr-chapters', DATA = 'gcr-data', EXT = 'gcr-ext', IMG = 'gcr-img', SPON = 'gcr-sponsor';
 
 // the sponsor list and all its pictures; pictures of sponsors that were removed are dropped
@@ -32,8 +32,8 @@ function saveSponsors(res) {
 }
 var FILES = [
  "/",
- "/reader.js?v=2026-11-05.31a972d",
- "/reader.css?v=2026-11-05.31a972d",
+ "/reader.js?v=2026-11-08.622ccc0",
+ "/reader.css?v=2026-11-08.622ccc0",
  "/app.webmanifest",
  "/brand/logo-light.png",
  "/brand/logo-dark.png",

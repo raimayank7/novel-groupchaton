@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>GroupChatOn: read Korean web novels in the app</title>
-<meta name="description" content="The GroupChatOn app: read every novel, follow your favourites, continue where you stopped and keep chapters for offline reading. Free.">
+<meta name="description" content="The GroupChatOn app: read every novel from www.groupchaton.com, follow your favourites, continue where you stopped and keep chapters for offline reading. Free.">
 <link rel="canonical" id="canon" href="https://novel.groupchaton.com/">
 <script>
   /* before the first paint: reading theme, font size and the right canonical address for this screen.
@@ -21,12 +21,14 @@
     d.style.setProperty('--rd-lh', s.lh || 1.8);
     d.style.setProperty('--rd-measure', ({ s: '600px', m: '700px', l: '820px' })[s.width] || '700px');
     if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) d.classList.add('is-installed');
-    var p = location.pathname, m = p.match(/^\/read\/(\d{4}\/\d{2}\/[\w.-]+?)\/?$/), c = document.getElementById('canon');
-    // read pages are canonical here; other screens are noindex
-    if (m) c.href = 'https://novel.groupchaton.com/read/' + m[1] + '/';
-    else if (p !== '/' && p !== '/index.html') {
-      var r = document.createElement('meta'); r.name = 'robots'; r.content = 'noindex'; document.head.appendChild(r);
-      if (/^\/novel\//.test(p)) c.href = 'https://novel.groupchaton.com/';
+    var p = location.pathname, c = document.getElementById('canon');
+    // novel.groupchaton.com is the indexed reading site; self-canonical for /read/ and /novel/ paths
+    if (p !== '/' && p !== '/index.html') {
+      if (/^\/(read|novel)\//.test(p)) {
+        c.href = 'https://novel.groupchaton.com' + p.replace(/\/$/, '') + '/';
+      } else {
+        var r = document.createElement('meta'); r.name = 'robots'; r.content = 'noindex'; document.head.appendChild(r);
+      }
     }
   })();
 </script>
@@ -48,7 +50,7 @@
 <meta property="og:url" content="https://novel.groupchaton.com/">
 <meta property="og:image" content="https://novel.groupchaton.com/brand/share-banner.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"GroupChatOn","url":"https://novel.groupchaton.com/","applicationCategory":"BookApplication","operatingSystem":"Any (installs from the browser)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Read every GroupChatOn novel: follow novels, continue where you stopped and read offline.","publisher":{"@id":"https://www.groupchaton.com/#org"}},{"@type":"Organization","@id":"https://www.groupchaton.com/#org","name":"GroupChatOn","url":"https://www.groupchaton.com/","logo":"https://novel.groupchaton.com/brand/favicon-512.png"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"GroupChatOn","url":"https://novel.groupchaton.com/","applicationCategory":"BookApplication","operatingSystem":"Any (installs from the browser)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Read every novel from www.groupchaton.com: follow novels, continue where you stopped and read offline.","publisher":{"@id":"https://www.groupchaton.com/#org"}},{"@type":"Organization","@id":"https://www.groupchaton.com/#org","name":"GroupChatOn","url":"https://www.groupchaton.com/","logo":"https://novel.groupchaton.com/brand/favicon-512.png"}]}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Literata:ital,opsz,wght@0,7..72,400..800;1,7..72,400&display=swap">
@@ -76,7 +78,7 @@
   #main{outline:0}
   #main.is-in{animation:fadein .25s ease-out}@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 </style>
-<link rel="stylesheet" href="/reader.css?v=2026-11-05.31a972d">
+<link rel="stylesheet" href="/reader.css?v=2026-11-08.622ccc0">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -99,6 +101,6 @@
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <noscript><div class="wrap"><p>The GroupChatOn app needs JavaScript. You can read every novel on <a href="https://www.groupchaton.com/">www.groupchaton.com</a>.</p></div></noscript>
-<script src="/reader.js?v=2026-11-05.31a972d" defer></script>
+<script src="/reader.js?v=2026-11-08.622ccc0" defer></script>
 </body>
 </html>
