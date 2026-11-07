@@ -210,6 +210,12 @@ def main():
     series = json.loads(get(SERIES))['series']
     posts = feed_posts()
     if len(posts) < 100:
+        # Still regenerate the sitemap from whatever novels.json is on disk so it isn't stuck at 1 URL.
+        try:
+            existing = json.load(open(os.path.join(ROOT, 'data', 'novels.json'), encoding='utf-8'))
+            save_sitemap(existing['novels'])
+        except Exception:
+            pass
         sys.exit(f'Only {len(posts)} posts came back from the feed; keeping the old data.')
     old = {}
     try:
