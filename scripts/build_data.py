@@ -297,11 +297,37 @@ def main():
         pass
     with open(os.path.join(ROOT, 'data', 'novels.json'), 'w', encoding='utf-8', newline='\n') as f:
         json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
+    save_sitemap(data['novels'])
     save_promos()
     print(f'done: {len(done)} read, {failed} failed')
     if failed > max(20, len(todo) // 5):
         sys.exit('Too many chapters failed.')
 
+
+
+APP = 'https://novel.groupchaton.com'
+
+
+def save_sitemap(novels):
+    """Write sitemap.xml: home + one /novel/<id>/ page per series + every chapter /read/<key>/."""
+    urls = [f'  <url><loc>{APP}/</loc><changefreq>daily</changefreq></url>']
+    for n in novels:
+        urls.append(f'  <url><loc>{APP}/novel/{n["id"]}/</loc><changefreq>weekly</changefreq></url>')
+        for key, _title, pub, _w in n['chapters']:
+            urls.append(f'  <url><loc>{APP}/read/{key}/</loc><lastmod>{pub}</lastmod><changefreq>monthly</changefreq></url>')
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+           + '\n'.join(urls) + '\n</urlset>\n')
+    dest = os.path.join(ROOT, 'sitemap.xml')
+    try:
+        if open(dest, encoding='utf-8').read() == xml:
+            return  # no change: don't touch the file
+    except Exception:
+        pass
+    with open(dest, 'w', encoding='utf-8', newline='\n') as f:
+        f.write(xml)
+    total = 1 + len(novels) + sum(len(n['chapters']) for n in novels)
+    print(f'sitemap: {total} URLs')
 
 
 PROMOS = 'https://share.groupchaton.com/promos.json'   # the sponsor list Share uses (same sponsors as the novels site)
