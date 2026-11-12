@@ -2,7 +2,7 @@
  "name": "GroupChatOn",
  "short_name": "GroupChatOn",
  "id": "/",
- "description": "Read every novel from www.groupchaton.com: follow your favourites, continue where you stopped and read chapters offline.",
+ "description": "Read every GroupChatOn novel: follow your favourites, continue where you stopped and read chapters offline.",
  "start_url": "/?source=pwa",
  "scope": "/",
  "display": "standalone",

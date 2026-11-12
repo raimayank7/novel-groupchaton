@@ -1,6 +1,6 @@
 # Builds the novel data the GroupChatOn app reads (GitHub Actions runs this every hour).
 #   data/novels.json      : every novel (title, cover, summary, genres) with its chapters in reading order
-#   c/<yyyy>/<mm>/<x>.json : the text of one chapter (www.groupchaton.com/<yyyy>/<mm>/<x>.html)
+#   c/<yyyy>/<mm>/<x>.json : the text of one chapter (the blog post /<yyyy>/<mm>/<x>.html)
 # The book list (titles, covers, which addresses belong to which book) comes from the novels site:
 # https://assets.groupchaton.com/data/series.json (groupchaton-theme repo, data/series-config.json).
 # Chapters come from the blog: the public feed lists every post, and each new or edited post's page is read once.
@@ -11,7 +11,7 @@ import argparse, concurrent.futures as cf, html, json, os, re, sys, time, urllib
 from html.parser import HTMLParser
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SITE = os.environ.get('SITE_URL', 'https://www.groupchaton.com')
+SITE = os.environ.get('SITE_URL', 'https://groupchaton-novels.blogspot.com')   # the blog; www.groupchaton.com is the family's start page since Nov 2026
 SERIES = os.environ.get('SERIES_URL', 'https://assets.groupchaton.com/data/series.json')
 UA = {'User-Agent': 'GroupChatOn app build (+https://novel.groupchaton.com)'}
 

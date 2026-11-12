@@ -1,4 +1,4 @@
-/* GroupChatOn app (novel.groupchaton.com): the reading app for www.groupchaton.com.
+/* GroupChatOn app (novel.groupchaton.com): the reading app for the GroupChatOn novels (chapters are written on the blog, BLOG below).
    - Novels and chapter lists: /data/novels.json (built every hour from the blog by scripts/build_data.py)
    - Chapter text: /c/<yyyy>/<mm>/<name>.json; every opened or downloaded chapter stays on the device (service worker)
    - Brand-new chapters: Blogger's own feed (JSONP), so they show up before the next hourly build
@@ -7,8 +7,10 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-08.622ccc0';
+  var VERSION = '2026-11-12.94a7c54';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
+  var BLOG = 'https://groupchaton-novels.blogspot.com';   /* where chapters are written; www is the family's start page since Nov 2026 */
+  var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
   var CH_CACHE = 'gcr-chapters';
   var doc = document, html = doc.documentElement, main = doc.getElementById('main');
@@ -209,7 +211,7 @@
       });
       if (changed && route.name === 'home') render(null, true);
     };
-    var s = el('script', { src: WWW + '/feeds/posts/summary?alt=json-in-script&max-results=25&callback=' + cb, async: true });
+    var s = el('script', { src: BLOG + '/feeds/posts/summary?alt=json-in-script&max-results=25&callback=' + cb, async: true });
     s.onerror = function () { delete window[cb]; };
     doc.head.appendChild(s);
   }
@@ -464,7 +466,7 @@
     var d = $('meta[name="description"]'); if (d && desc) d.setAttribute('content', desc);
     var c = $('#canon'); if (c) c.href = canon || 'https://novel.groupchaton.com/';
     var r = $('meta[name="robots"]');
-    var index = route.name === 'home' || route.name === 'read';   // chapters: canonical to the blog, no noindex
+    var index = route.name === 'home' || route.name === 'read' || route.name === 'novel';   // home, novel and chapter pages are this site's own pages (in sitemap.xml)
     if (index && r) r.remove();
     if (!index && !r) doc.head.appendChild(el('meta', { name: 'robots', content: 'noindex' }));
   }
@@ -550,7 +552,7 @@
   var PAGES = {};
 
   PAGES.home = function () {
-    setMeta('', 'The GroupChatOn app: read every novel from www.groupchaton.com, follow your favourites, continue where you stopped and keep chapters for offline reading.');
+    setMeta('', 'The GroupChatOn app: read every GroupChatOn novel, follow your favourites, continue where you stopped and keep chapters for offline reading.');
     return Promise.all([loadData(), oldRecords()]).then(function (r) {
       var d = r[0], w = el('div', { 'class': 'wrap' });
       if (hasOld(r[1]) && !store.get('gco-app-old-hide', false)) w.appendChild(oldBanner(r[1]));
@@ -616,7 +618,7 @@
     return loadData().then(function (d) {
       var n = d.byId[r.id];
       if (!n) return PAGES.notfound();
-      setMeta(novelName(n), 'Read ' + novelName(n) + ' in the GroupChatOn app: ' + n.chapters.length + ' chapters.', WWW + n.index);
+      setMeta(novelName(n), 'Read ' + novelName(n) + ' in the GroupChatOn app: ' + n.chapters.length + ' chapters.', SELF + location.pathname);
       seen(n);
       var w = el('div', { 'class': 'wrap' }), h = hist()[n.id], read = readSet(n.id), readMap = {};
       read.forEach(function (k) { readMap[k] = 1; });
@@ -658,7 +660,7 @@
       var holder = el('div');
       w.appendChild(holder);
       offlineKeys().then(function (off) { holder.appendChild(tocBox(n, h && h.k, readMap, off)); });
-      w.appendChild(el('p', { style: 'margin-top:24px' }, [el('a', { href: WWW + n.index, html: icon('ext', 'Open this novel on www.groupchaton.com') })]));
+      
       w.appendChild(footer());
       return w;
     });
@@ -726,7 +728,7 @@
       var i = n ? n.idx[r.key] : -1, c = n ? n.chapters[i] : null;
       var w = el('article', { 'class': 'reader' });
       var prev = n && i > 0 ? n.chapters[i - 1] : null, next = n && i < n.chapters.length - 1 ? n.chapters[i + 1] : null;
-      setMeta(c ? c[1] + (n ? ' · ' + n.title : '') : 'Chapter', c && n ? 'Read ' + n.title + ' ' + c[1] + ' in the GroupChatOn app.' : '', WWW + '/' + r.key + '.html');
+      setMeta(c ? c[1] + (n ? ' · ' + n.title : '') : 'Chapter', c && n ? 'Read ' + n.title + ' ' + c[1] + ' in the GroupChatOn app.' : '', SELF + location.pathname);
       if (n) w.appendChild(el('nav', { 'class': 'crumb', 'aria-label': 'Breadcrumb' }, [el('a', { href: '/', text: 'Home' }), '›', el('a', { href: '/novel/' + n.id + '/', text: n.short || n.title })]));
       var title = el('h1', { 'class': 'rd-title', text: c ? c[1] : 'Loading…' });
       var meta = el('div', { 'class': 'rd-meta' });
@@ -797,7 +799,7 @@
         text.innerHTML = '';
         if (e.missing || (c && c[4])) {
           text.appendChild(el('div', { 'class': 'note' }, [el('p', {}, [el('b', { text: 'Just published! ' }), 'The app gets its own copy of new chapters within about an hour. You can read it on the website right now.']),
-            el('div', { 'class': 'row' }, [el('a', { 'class': 'btn btn-primary btn-sm', href: WWW + '/' + r.key + '.html', html: icon('ext', 'Read on www.groupchaton.com') })])]));
+            el('div', { 'class': 'row' }, [el('a', { 'class': 'btn btn-primary btn-sm', href: BLOG + '/' + r.key + '.html', html: icon('ext', 'Open the chapter page') })])]));
         } else {
           text.appendChild(el('div', { 'class': 'note' }, [el('p', { text: navigator.onLine ? 'This chapter did not load. Check your internet connection and try again. Chapters you opened or downloaded before open without internet: see your Library.' : 'You are offline and this chapter is not saved on this device yet. Connect to the internet, or open a downloaded chapter from your Library.' }),
             el('div', { 'class': 'row' }, [el('button', { type: 'button', 'class': 'btn btn-sm', text: 'Try again', onclick: function () { render(); } })])]));
@@ -815,7 +817,7 @@
     if (prev) row.appendChild(el('a', { 'class': 'btn btn-sm', href: '/read/' + prev[0] + '/', html: icon('prev', 'Previous') }));
     if (n) row.appendChild(el('a', { 'class': 'btn btn-sm', href: '/novel/' + n.id + '/#chapters', html: icon('list', 'All chapters') }));
     if (navigator.share) row.appendChild(el('button', { type: 'button', 'class': 'btn btn-sm', html: icon('share', 'Share'), onclick: function () {
-      navigator.share({ title: doc.title, url: WWW + location.pathname.replace(/^\/read\//, '/').replace(/\/$/, '.html') }).catch(function () {});
+      navigator.share({ title: doc.title, url: SELF + location.pathname }).catch(function () {});
     } }));
     s.appendChild(row);
     return s;
@@ -995,10 +997,10 @@
         el('dl', { 'class': 'kv' }, [el('dt', { text: 'App' }), el('dd', { text: 'GroupChatOn' }), el('dt', { text: 'Version' }), el('dd', { text: VERSION }),
           el('dt', { text: 'Novels updated' }), el('dd', { text: DATA ? new Date(DATA.built).toLocaleString() : '—' }),
           el('dt', { text: 'Website' }), el('dd', {}, [el('a', { href: WWW + '/', text: 'www.groupchaton.com' })])]),
-        el('p', { text: 'The app shows the same novels and chapters as www.groupchaton.com and checks for new chapters by itself. Your library, reading position and settings stay in this browser only.' }),
+        el('p', { text: 'The app shows every GroupChatOn novel and chapter and checks for new chapters by itself. Your library, reading position and settings stay in this browser only.' }),
         el('p', {}, ['Record tools (invoices, khata, money manager…) are on ', el('a', { href: INF + '/', text: 'Infinity' }), '.']),
         el('div', { 'class': 'links' }, [el('a', { href: WWW + '/p/privacy-policy.html', text: 'Privacy policy' }), el('a', { href: WWW + '/p/disclaimer.html', text: 'Disclaimer' }),
-          el('a', { href: WWW + '/p/contact-us.html?from=app', text: 'Contact us' }), el('a', { href: WWW + '/p/about-us.html', text: 'About GroupChatOn' })]),
+          el('a', { href: WWW + '/p/contact-us.html?from=app', text: 'Contact us' }), el('a', { href: WWW + '/', text: 'About GroupChatOn' })]),
         el('p', { 'class': 'copy', html: '© ' + new Date().getFullYear() + ' GroupChatOn. All rights reserved.<br>Designed &amp; Developed by: <a href="https://www.niveshsahayak.in/" rel="noopener" target="_blank">Nivesh Sahayak</a>' })]));
       if (!DATA) loadData().then(function () { if (route.name === 'settings') render(); }).catch(function () {});
       return w;
