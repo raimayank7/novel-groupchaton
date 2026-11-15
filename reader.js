@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.07308e9';
+  var VERSION = '2026-11-15.aedfc0a';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -1324,7 +1324,7 @@
      The browser's own "Read aloud" stops at ads, cards and re-drawn parts of a page. This one reads only the story:
      one short piece at a time (long pieces get cut off by speech engines), highlights what is being read, scrolls along,
      goes on to the next chapter by itself, and keeps the screen awake. Voices come from the device (Edge has natural ones). */
-  var TTS = { mode: 'voice', fa: null, ftok: 0, ctx: null, parts: [], i: 0, on: false, open: false, bar: null, token: 0, resumeNext: false, wake: null, mark: null, guard: 0,
+  var TTS = { src: store.get('gco-app-tts-src', 'rec'), mode: 'voice', fa: null, ftok: 0, ctx: null, parts: [], i: 0, on: false, open: false, bar: null, token: 0, resumeNext: false, wake: null, mark: null, guard: 0,
     rate: +store.get('gco-app-tts-rate', 1) || 1, voice: store.get('gco-app-tts-voice', ''), auto: store.get('gco-app-tts-auto', true) !== false };
   function ttsOk() { return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window; }
   function ttsChunks(text) {
@@ -1470,10 +1470,19 @@
   function ttsBar() {
     if (TTS.bar) return TTS.bar;
     var speeds = [0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2], rate = el('select', { 'aria-label': 'Speed' }, speeds.map(function (s) { return el('option', { value: s, text: s + 'x' }); })),
-      voice = el('select', { 'aria-label': 'Voice' }), auto = el('input', { type: 'checkbox', id: 'tts-auto' });
+      src = el('select', { 'aria-label': 'Where the voice comes from' }, [el('option', { value: 'rec', text: 'Recorded voice' }), el('option', { value: 'voice', text: 'Voices on my device' })]), voice = el('select', { 'aria-label': 'Voice' }), auto = el('input', { type: 'checkbox', id: 'tts-auto' });
     rate.value = String(TTS.rate); auto.checked = TTS.auto;
     rate.onchange = function () { TTS.rate = +rate.value; store.set('gco-app-tts-rate', TTS.rate); if (TTS.mode === 'file') TTS.fa.playbackRate = TTS.rate; else ttsRestartHere(); };
     voice.onchange = function () { TTS.voice = voice.value; store.set('gco-app-tts-voice', TTS.voice); ttsRestartHere(); };
+    src.value = TTS.src; src.hidden = !ttsOk();
+    src.onchange = function () {
+      var f = TTS.mode === 'file', pos = f && TTS.fa ? TTS.fa.currentTime : 0;
+      TTS.src = src.value; store.set('gco-app-tts-src', TTS.src);
+      var was = TTS.on;
+      ttsPause();
+      if (!f) TTS.i = ttsFirstVisible();
+      ttsStart();
+    };
     auto.onchange = function () { TTS.auto = auto.checked; store.set('gco-app-tts-auto', TTS.auto); };
     function fill() {
       var vs = ttsVoices(), cur = (ttsPick() || {}).name;
@@ -1492,7 +1501,7 @@
         el('span', { 'class': 'tts-title' }),
         el('button', { type: 'button', 'class': 'icon-btn', 'aria-label': 'Close the player', html: icon('x'), onclick: ttsClose })]),
       el('div', { 'class': 'tts-row tts-seekrow', hidden: true }, [el('input', { type: 'range', 'class': 'tts-seek', min: 0, max: 100, value: 0, 'aria-label': 'Position in the chapter' }), el('span', { 'class': 'tts-time' })]),
-      el('div', { 'class': 'tts-row tts-opts' }, [rate, voice, el('label', { 'class': 'tts-auto', 'for': 'tts-auto' }, [auto, 'Next chapter'])])]);
+      el('div', { 'class': 'tts-row tts-opts' }, [src, rate, voice, el('label', { 'class': 'tts-auto', 'for': 'tts-auto' }, [auto, 'Next chapter'])])]);
     var sk = $('.tts-seek', TTS.bar);
     sk.oninput = function () { TTS.drag = true; };
     sk.onchange = function () { TTS.drag = false; if (TTS.fa) TTS.fa.currentTime = +sk.value; };
@@ -1517,7 +1526,12 @@
     if ('mediaSession' in navigator) try {
       navigator.mediaSession.metadata = new MediaMetadata({ title: TTS.ctx.title, artist: TTS.ctx.novel, album: 'GroupChatOn', artwork: TTS.ctx.cover ? [{ src: TTS.ctx.cover, sizes: '320x480' }] : [] });
     } catch (e) {}
-    ttsFile(function (ok) {
+    ttsStart();
+  }
+  /* the listener's choice: the recorded chapter (one voice) or the voices of this device (any of them, e.g. Ava Online Natural) */
+  function ttsStart() {
+    TTS.probing = true;
+    var cb = function (ok) {
       if (!ok && !ttsOk()) { toast('This chapter has no recording yet, and this browser cannot read it aloud.'); ttsClose(); return; }
       TTS.probing = false;
       TTS.mode = ok ? 'file' : 'voice';
@@ -1526,7 +1540,8 @@
       try { window.speechSynthesis.cancel(); } catch (e) {}
       if (ok) { TTS.on = false; ttsKeep(false); ttsMark(null); } else if (TTS.fa) TTS.fa.pause();
       ttsLook(); ttsPlay();
-    });
+    };
+    if (TTS.src === 'voice' && ttsOk()) { if (TTS.fa) { TTS.ftok++; TTS.fa.pause(); } cb(false); } else ttsFile(cb);
   }
   /* The recorded chapter (release file of the novel-audio repository), when there is one. ONE audio element lives for the whole visit:
      a phone keeps playing it with the screen locked and lets it go on to the next chapter. Without a file the device voice reads. */
