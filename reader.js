@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.d9c7400';
+  var VERSION = '2026-11-15.7bb5aad';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -1689,7 +1689,28 @@
     if (TTS.bar) { ttsMeasure(); ttsLabels(); }
     if (TTS.resumeNext) { TTS.resumeNext = false; setTimeout(function () { if (TTS.ctx && TTS.ctx.key === key) ttsOpen(); }, 500); }
   }
-  doc.addEventListener('visibilitychange', function () { if (!doc.hidden && TTS.on) ttsWake(true); });
+  /* After the screen was off while Listen was playing, ask once whether it kept going (at most 3 times per device), so we learn which phones need work */
+  var LOCKQ = null;
+  doc.addEventListener('visibilitychange', function () {
+    if (doc.hidden) { if (TTS.on) LOCKQ = { t: Date.now(), i: TTS.i, mode: TTS.mode }; return; }
+    if (TTS.on) ttsWake(true);
+    var q = LOCKQ; LOCKQ = null;
+    if (!q || Date.now() - q.t < 20000 || (+store.get('gco-app-lockq', 0) || 0) >= 3) return;
+    var moved = TTS.i !== q.i, secs = Math.round((Date.now() - q.t) / 1000);
+    store.set('gco-app-lockq', (+store.get('gco-app-lockq', 0) || 0) + 1);
+    function answer(a) {
+      closeSheets();
+      sendMessage('Locked-screen listening: ' + a, { name: 'Listen test', message: 'Kept reading while the screen was off: ' + a + '\nPage saw progress: ' + (moved ? 'yes' : 'no') + '\nScreen off for: ' + secs + ' s\nMode: ' + q.mode + '\nPhone and browser: ' + navigator.userAgent + '\nPlatform: ' + (navigator.platform || '') })
+        .then(function (r) { toast(r.ok ? 'Thank you. That helps us fix Listen for your phone.' : r.msg); });
+    }
+    sheet('Did Listen keep reading?', el('div', {}, [
+      el('p', { text: 'The screen was off for about ' + secs + ' seconds. Did the voice keep reading the whole time?' }),
+      el('p', { 'class': 'muted', text: 'Your answer, and your phone and browser name, come to us. Nothing else.' }),
+      el('div', { style: 'display:flex;gap:10px;flex-wrap:wrap' }, [
+        el('button', { type: 'button', 'class': 'btn', text: 'Yes, it kept reading', onclick: function () { answer('YES'); } }),
+        el('button', { type: 'button', 'class': 'btn', text: 'No, it stopped', onclick: function () { answer('NO'); } }),
+        el('button', { type: 'button', 'class': 'btn', text: 'Not now', onclick: closeSheets })])]));
+  });
   window.addEventListener('pagehide', function () { try { window.speechSynthesis.cancel(); } catch (e) {} });
 
   /* ---------------- start ---------------- */
