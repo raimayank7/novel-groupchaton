@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.2d19413';
+  var VERSION = '2026-11-15.f477ca6';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -1690,15 +1690,18 @@
     if (TTS.resumeNext) { TTS.resumeNext = false; setTimeout(function () { if (TTS.ctx && TTS.ctx.key === key) ttsOpen(); }, 500); }
   }
   /* After the screen was off while Listen was playing, ask once whether it kept going (at most 3 times per device), so we learn which phones need work */
-  var LOCKQ = null;
+  var LOCKQ = null, LOCKQ_SHOWN = false;
   function lockGone() { if (TTS.open && !LOCKQ) LOCKQ = { t: Date.now(), i: TTS.i, mode: TTS.mode, on: TTS.on }; }   // the player was open when the page went away (playing or not: a phone may have paused it)
   function lockBack() {
     if (TTS.on) ttsWake(true);
     var q = LOCKQ; LOCKQ = null;
-    if (!q || Date.now() - q.t < 10000 || (+store.get('gco-app-lockq', 0) || 0) >= 3) return;
+    // once answered: never again. "Not now": not for 7 days. Never twice in one visit, never while a question is already open.
+    if (!q || LOCKQ_SHOWN || Date.now() - q.t < 10000 || store.get('gco-app-lockans', 0) || Date.now() - (+store.get('gco-app-locknow', 0) || 0) < 7 * 864e5 || (+store.get('gco-app-lockq', 0) || 0) >= 3) return;
+    LOCKQ_SHOWN = true;
     var moved = TTS.i !== q.i, secs = Math.round((Date.now() - q.t) / 1000);
     store.set('gco-app-lockq', (+store.get('gco-app-lockq', 0) || 0) + 1);
     function answer(a) {
+      store.set('gco-app-lockans', Date.now());
       closeSheets();
       sendMessage('Locked-screen listening: ' + a, { name: 'Listen test', message: 'Kept reading while the screen was off: ' + a + '\nWas playing when the screen went off: ' + (q.on ? 'yes' : 'no') + '\nPage saw progress: ' + (moved ? 'yes' : 'no') + '\nScreen off for: ' + secs + ' s\nMode: ' + q.mode + '\nPhone and browser: ' + navigator.userAgent + '\nPlatform: ' + (navigator.platform || '') })
         .then(function (r) { toast(r.ok ? 'Thank you. That helps us fix Listen for your phone.' : r.msg); });
@@ -1709,7 +1712,7 @@
       el('div', { style: 'display:flex;gap:10px;flex-wrap:wrap' }, [
         el('button', { type: 'button', 'class': 'btn', text: 'Yes, it kept reading', onclick: function () { answer('YES'); } }),
         el('button', { type: 'button', 'class': 'btn', text: 'No, it stopped', onclick: function () { answer('NO'); } }),
-        el('button', { type: 'button', 'class': 'btn', text: 'Not now', onclick: closeSheets })])]));
+        el('button', { type: 'button', 'class': 'btn', text: 'Not now', onclick: function () { store.set('gco-app-locknow', Date.now()); closeSheets(); } })])]));
   }
   doc.addEventListener('visibilitychange', function () { if (doc.hidden) lockGone(); else lockBack(); });
   window.addEventListener('pagehide', lockGone);
