@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.a6905d2';
+  var VERSION = '2026-11-15.c529bac';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -796,7 +796,7 @@
       }
       bar.appendChild(navBtn(prev, 'prev'));
       bar.appendChild(el('button', { type: 'button', 'class': 'icon-btn', 'aria-label': 'Chapter list', html: icon('list'), onclick: function () { openToc(); } }));
-      if (ttsOk()) bar.appendChild(el('button', { type: 'button', 'class': 'icon-btn', 'aria-label': 'Listen to this chapter', html: icon('listen'), onclick: function () { if (TTS.open && TTS.bar) ttsToggle(); else ttsOpen(); } }));
+      bar.appendChild(el('button', { type: 'button', 'class': 'icon-btn', 'aria-label': 'Listen to this chapter', html: icon('listen'), onclick: function () { if (TTS.open && TTS.bar) ttsToggle(); else ttsOpen(); } }));
       bar.appendChild(pct);
       bar.appendChild(el('button', { type: 'button', 'class': 'icon-btn', 'aria-label': 'Reading settings', html: icon('aa'), onclick: function () { sheet('Reading settings', settingsPanel()); } }));
       bar.appendChild(navBtn(next, 'next'));
@@ -1324,7 +1324,7 @@
      The browser's own "Read aloud" stops at ads, cards and re-drawn parts of a page. This one reads only the story:
      one short piece at a time (long pieces get cut off by speech engines), highlights what is being read, scrolls along,
      goes on to the next chapter by itself, and keeps the screen awake. Voices come from the device (Edge has natural ones). */
-  var TTS = { ctx: null, parts: [], i: 0, on: false, open: false, bar: null, token: 0, resumeNext: false, wake: null, mark: null, guard: 0,
+  var TTS = { mode: 'voice', fa: null, ftok: 0, ctx: null, parts: [], i: 0, on: false, open: false, bar: null, token: 0, resumeNext: false, wake: null, mark: null, guard: 0,
     rate: +store.get('gco-app-tts-rate', 1) || 1, voice: store.get('gco-app-tts-voice', ''), auto: store.get('gco-app-tts-auto', true) !== false };
   function ttsOk() { return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window; }
   function ttsChunks(text) {
@@ -1400,6 +1400,7 @@
   }
   function ttsPause() {
     TTS.on = false; TTS.token++; clearTimeout(TTS.guard);
+    if (TTS.fa && TTS.mode === 'file') TTS.fa.pause();
     try { window.speechSynthesis.cancel(); } catch (e) {}
     ttsLabels(); ttsWake(false); ttsKeep(false);
     if ('mediaSession' in navigator) try { navigator.mediaSession.playbackState = 'paused'; } catch (e) {}
@@ -1433,12 +1434,20 @@
   }
   function ttsPlay() {
     if (!TTS.ctx) return;
+    if (TTS.mode === 'file') {
+      TTS.on = true; ttsLabels(); ttsWake(true);
+      TTS.fa.playbackRate = TTS.rate;
+      var pr = TTS.fa.play(); if (pr && pr.catch) pr.catch(function () { TTS.on = false; ttsLabels(); });
+      if ('mediaSession' in navigator) try { navigator.mediaSession.playbackState = 'playing'; } catch (e) {}
+      return;
+    }
     TTS.on = true; ttsLabels(); ttsWake(true); ttsKeep(true);
     if ('mediaSession' in navigator) try { navigator.mediaSession.playbackState = 'playing'; } catch (e) {}
     ttsSpeak();
   }
   function ttsToggle() { if (TTS.on) ttsPause(); else ttsPlay(); }
   function ttsSkip(dir) {
+    if (TTS.mode === 'file') { TTS.fa.currentTime = Math.max(0, TTS.fa.currentTime + (dir > 0 ? 30 : -15)); return; }
     var j = TTS.i;
     if (dir > 0) { j++; while (j < TTS.parts.length && !TTS.parts[j].first) j++; if (j >= TTS.parts.length) j = TTS.parts.length - 1; }
     else { j--; while (j > 0 && !TTS.parts[j].first) j--; j = Math.max(0, j - (TTS.parts[TTS.i] && TTS.parts[TTS.i].first ? 0 : 0)); }
@@ -1449,6 +1458,7 @@
   function ttsRestartHere() { if (!TTS.on) return; TTS.token++; try { window.speechSynthesis.cancel(); } catch (e) {} ttsSpeak(); }
   function ttsClose() {
     ttsPause(); ttsMark(null); TTS.open = false;
+    if (TTS.fa) { TTS.ftok++; TTS.fa.removeAttribute('src'); TTS.fa.load(); }
     if (TTS.bar) { TTS.bar.remove(); TTS.bar = null; }
     doc.body.classList.remove('has-tts');
   }
@@ -1462,7 +1472,7 @@
     var speeds = [0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2], rate = el('select', { 'aria-label': 'Speed' }, speeds.map(function (s) { return el('option', { value: s, text: s + 'x' }); })),
       voice = el('select', { 'aria-label': 'Voice' }), auto = el('input', { type: 'checkbox', id: 'tts-auto' });
     rate.value = String(TTS.rate); auto.checked = TTS.auto;
-    rate.onchange = function () { TTS.rate = +rate.value; store.set('gco-app-tts-rate', TTS.rate); ttsRestartHere(); };
+    rate.onchange = function () { TTS.rate = +rate.value; store.set('gco-app-tts-rate', TTS.rate); if (TTS.mode === 'file') TTS.fa.playbackRate = TTS.rate; else ttsRestartHere(); };
     voice.onchange = function () { TTS.voice = voice.value; store.set('gco-app-tts-voice', TTS.voice); ttsRestartHere(); };
     auto.onchange = function () { TTS.auto = auto.checked; store.set('gco-app-tts-auto', TTS.auto); };
     function fill() {
@@ -1476,12 +1486,16 @@
     try { window.speechSynthesis.addEventListener('voiceschanged', fill); } catch (e) {}
     TTS.bar = el('div', { 'class': 'tts', role: 'region', 'aria-label': 'Listen to this chapter' }, [
       el('div', { 'class': 'tts-row' }, [
-        el('button', { type: 'button', 'class': 'icon-btn', 'aria-label': 'Previous paragraph', html: icon('prev'), onclick: function () { ttsSkip(-1); } }),
+        el('button', { type: 'button', 'class': 'icon-btn tts-prev', 'aria-label': 'Previous paragraph', html: icon('prev'), onclick: function () { ttsSkip(-1); } }),
         el('button', { type: 'button', 'class': 'icon-btn tts-play', 'aria-label': 'Play', html: icon('play'), onclick: ttsToggle }),
-        el('button', { type: 'button', 'class': 'icon-btn', 'aria-label': 'Next paragraph', html: icon('next'), onclick: function () { ttsSkip(1); } }),
+        el('button', { type: 'button', 'class': 'icon-btn tts-nextb', 'aria-label': 'Next paragraph', html: icon('next'), onclick: function () { ttsSkip(1); } }),
         el('span', { 'class': 'tts-title' }),
         el('button', { type: 'button', 'class': 'icon-btn', 'aria-label': 'Close the player', html: icon('x'), onclick: ttsClose })]),
+      el('div', { 'class': 'tts-row tts-seekrow', hidden: true }, [el('input', { type: 'range', 'class': 'tts-seek', min: 0, max: 100, value: 0, 'aria-label': 'Position in the chapter' }), el('span', { 'class': 'tts-time' })]),
       el('div', { 'class': 'tts-row tts-opts' }, [rate, voice, el('label', { 'class': 'tts-auto', 'for': 'tts-auto' }, [auto, 'Next chapter'])])]);
+    var sk = $('.tts-seek', TTS.bar);
+    sk.oninput = function () { TTS.drag = true; };
+    sk.onchange = function () { TTS.drag = false; if (TTS.fa) TTS.fa.currentTime = +sk.value; };
     doc.body.appendChild(TTS.bar);
     doc.body.classList.add('has-tts');
     ttsMeasure();
@@ -1489,25 +1503,74 @@
       var ms = navigator.mediaSession;
       ms.setActionHandler('play', ttsPlay); ms.setActionHandler('pause', ttsPause);
       ms.setActionHandler('previoustrack', function () { ttsSkip(-1); }); ms.setActionHandler('nexttrack', function () { ttsSkip(1); });
+      ms.setActionHandler('seekbackward', function () { if (TTS.mode === 'file') ttsSkip(-1); }); ms.setActionHandler('seekforward', function () { if (TTS.mode === 'file') ttsSkip(1); });
+      ms.setActionHandler('seekto', function (d) { if (TTS.mode === 'file' && d.seekTime != null) TTS.fa.currentTime = d.seekTime; });
     } catch (e) {}
     return TTS.bar;
   }
   function ttsOpen() {
-    if (!ttsOk()) { toast('Listening is not supported by this browser.'); return; }
     if (!TTS.ctx) return;
     TTS.open = true;
     TTS.parts = ttsBuild(TTS.ctx.el);
-    if (!TTS.parts.length) { toast('There is no text to read yet.'); return; }
     ttsBar();
     TTS.i = ttsFirstVisible();
     if ('mediaSession' in navigator) try {
       navigator.mediaSession.metadata = new MediaMetadata({ title: TTS.ctx.title, artist: TTS.ctx.novel, album: 'GroupChatOn', artwork: TTS.ctx.cover ? [{ src: TTS.ctx.cover, sizes: '320x480' }] : [] });
     } catch (e) {}
-    ttsPlay();
+    ttsFile(function (ok) {
+      if (!ok && !ttsOk()) { toast('This chapter has no recording yet, and this browser cannot read it aloud.'); ttsClose(); return; }
+      TTS.mode = ok ? 'file' : 'voice'; ttsLook(); ttsPlay();
+    });
+  }
+  /* The recorded chapter (release file of the novel-audio repository), when there is one. ONE audio element lives for the whole visit:
+     a phone keeps playing it with the screen locked and lets it go on to the next chapter. Without a file the device voice reads. */
+  var AUDIO = 'https://github.com/raimayank7/novel-audio/releases/download/';
+  function ttsFile(done) {
+    var fa = TTS.fa || (TTS.fa = new Audio()), key = TTS.ctx.key, finished = false, tok = ++TTS.ftok, t, want = AUDIO + 'n-' + TTS.ctx.nid + '/' + key.replace(/\//g, '_') + '.mp3';
+    fa.preload = 'metadata'; fa.setAttribute('playsinline', '');
+    if (fa.src === want && !fa.error && fa.readyState > 0) return done(true);   // already loaded: the player moved on to this chapter by itself
+    function end(ok) { if (finished || tok !== TTS.ftok) return; finished = true; fa.removeEventListener('loadedmetadata', good); fa.removeEventListener('error', bad); clearTimeout(t); done(ok); }
+    function good() { end(true); }
+    function bad() { end(false); }
+    fa.addEventListener('loadedmetadata', good); fa.addEventListener('error', bad);
+    t = setTimeout(bad, 7000);
+    if (!TTS.faBound) {
+      TTS.faBound = true;
+      fa.addEventListener('ended', function () {
+        if (TTS.mode !== 'file') return;
+        var nx = TTS.ctx && TTS.ctx.next;
+        if (TTS.auto && nx) {   // straight on to the next recording on the same element (no gap for a locked phone), then the page follows
+          fa.src = AUDIO + 'n-' + TTS.ctx.nid + '/' + nx[0].replace(/\//g, '_') + '.mp3';
+          var pr = fa.play(); if (pr && pr.catch) pr.catch(function () {});
+          TTS.resumeNext = true; go('/read/' + nx[0] + '/');
+        } else ttsFinished();
+      });
+      fa.addEventListener('timeupdate', ttsTime);
+      fa.addEventListener('pause', function () { if (TTS.mode === 'file' && TTS.on && !fa.ended && doc.visibilityState !== 'hidden') { TTS.on = false; ttsLabels(); } });
+      fa.addEventListener('play', function () { if (TTS.mode === 'file' && !TTS.on) { TTS.on = true; ttsLabels(); } });
+    }
+    if (fa.src !== want) { fa.src = want; fa.load(); } else if (fa.error) fa.load();
+  }
+  function ttsFmt(s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
+  function ttsTime() {
+    var fa = TTS.fa, sk = TTS.bar && $('.tts-seek', TTS.bar);
+    if (!fa || TTS.mode !== 'file' || !sk) return;
+    if (fa.duration) { sk.max = Math.floor(fa.duration); if (!TTS.drag) sk.value = Math.floor(fa.currentTime); }
+    var tm = $('.tts-time', TTS.bar); if (tm) tm.textContent = ttsFmt(fa.currentTime) + ' / ' + ttsFmt(fa.duration);
+    if ('mediaSession' in navigator && navigator.mediaSession.setPositionState && fa.duration) try { navigator.mediaSession.setPositionState({ duration: fa.duration, position: Math.min(fa.currentTime, fa.duration), playbackRate: fa.playbackRate || 1 }); } catch (e) {}
+  }
+  function ttsLook() {   // a recorded chapter shows a seek bar and time; the device voice shows paragraph buttons
+    if (!TTS.bar) return;
+    var f = TTS.mode === 'file';
+    $('.tts-seekrow', TTS.bar).hidden = !f;
+    $('.tts-opts select[aria-label="Voice"]', TTS.bar).style.display = f ? 'none' : '';
+    $('.tts-prev', TTS.bar).setAttribute('aria-label', f ? 'Back 15 seconds' : 'Previous paragraph');
+    $('.tts-nextb', TTS.bar).setAttribute('aria-label', f ? 'Forward 30 seconds' : 'Next paragraph');
+    if (f) { TTS.fa.playbackRate = TTS.rate; TTS.fa.preservesPitch = true; ttsTime(); }
   }
   /* called when a chapter is on the screen: remembers it, and goes on reading when the last chapter ended while listening */
   function ttsReady(n, ch, key, textEl, next) {
-    TTS.ctx = { el: textEl, title: ch.t || key, novel: n ? novelName(n) : 'GroupChatOn', next: next, key: key, cover: n && n.cover ? coverUrl(n.cover, 320) : '' };
+    TTS.ctx = { el: textEl, title: ch.t || key, novel: n ? novelName(n) : 'GroupChatOn', next: next, key: key, nid: n ? n.id : '', cover: n && n.cover ? coverUrl(n.cover, 320) : '' };
     if (TTS.bar) { ttsMeasure(); ttsLabels(); }
     if (TTS.resumeNext) { TTS.resumeNext = false; setTimeout(function () { if (TTS.ctx && TTS.ctx.key === key) ttsOpen(); }, 500); }
   }
