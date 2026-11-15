@@ -38,7 +38,7 @@ def feed_posts():
             break
         for e in entries:
             link = next((l['href'] for l in e['link'] if l['rel'] == 'alternate'), '')
-            posts.append({'path': re.sub(r'^https?://[^/]+', '', link), 'title': re.sub(r'\s+', ' ', e['title']['$t']).strip(),
+            posts.append({'path': re.sub(r'^https?://[^/]+', '', link), 'title': re.sub(r'\s+', ' ', html.unescape(e['title']['$t'])).strip(),
                           'pub': e['published']['$t'], 'upd': e['updated']['$t'], 'id': e['id']['$t'].rsplit('-', 1)[-1]})
         start += len(entries)
     return posts

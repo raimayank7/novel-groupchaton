@@ -169,9 +169,9 @@ html[data-align='justify'] .rd-text p{text-align:justify;hyphens:auto}
 .is-reading .wrap,.is-reading .reader{padding-bottom:110px}
 
 /* ads: always with a label and a clear gap from buttons */
-.pk-slot.is-ad{display:block;width:100%;margin:36px auto;text-align:center;min-height:120px;overflow:hidden;clear:both;line-height:normal}
-.pk-slot.is-ad::before{content:'Advertisement';display:block;font:500 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:.7;margin-bottom:8px}
-.pk-slot.is-empty,.pk-slot.is-ad:has(ins[data-ad-status^='unfill']),.no-ads .pk-slot.is-ad{display:none}
+.pk-slot.pk-wait{display:block;width:100%;margin:36px auto;text-align:center;min-height:120px;overflow:hidden;clear:both;line-height:normal}
+.pk-slot.pk-wait::before{content:'Advertisement';display:block;font:500 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:.7;margin-bottom:8px}
+.pk-slot.is-empty,.pk-slot.pk-wait:has(ins[data-ad-status^='unfill']),.no-ads .pk-slot.pk-wait{display:none}
 /* a sponsor card in an ad space that Google left empty (offline, blocked, no ad) */
 .pk-slot{display:block;width:100%;margin:36px auto;text-align:center;overflow:hidden;clear:both;line-height:normal}.pk-slot::before{content:'Sponsored';display:block;font:500 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:.7;margin-bottom:8px}.pk-slot.is-own::before{content:'From GroupChatOn'}.pk-slot[data-tag]::before{content:attr(data-tag)}.pk-slot.is-empty{display:none}
 .promo-card .promo-ic{display:grid;place-items:center;width:64px;height:64px;border-radius:18px;background:var(--accent);color:var(--accent-ink)}.promo-card .promo-ic svg{width:32px;height:32px}.promo-card small{color:var(--muted);font-size:12.5px}.promo-card img.promo-ic.is-mark{padding:0;background:none;object-fit:cover}
