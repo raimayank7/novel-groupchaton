@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.e50e710';
+  var VERSION = '2026-11-15.59802c4';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -280,7 +280,7 @@
   }, { rootMargin: '500px 0px' }) : null;
   function adSlot(kind, slot) {
     if (!slot) return null;   // offline too: the space then shows a sponsor card
-    var d = el('div', { 'class': 'ad-slot ' + kind, 'data-slot': slot, 'data-kind': kind });
+    var d = el('div', { 'class': 'pk-slot is-ad', 'data-slot': slot, 'data-kind': kind });
     if (adObs) adObs.observe(d); else setTimeout(function () { fillAd(d); }, 0);
     return d;
   }
@@ -289,7 +289,7 @@
     if (!adsLoaded) {
       adsLoaded = true;
       var sc = el('script', { async: true, crossorigin: 'anonymous', src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + AD_CLIENT });
-      sc.onerror = function () { adsBlocked = true; [].forEach.call(doc.querySelectorAll('.ad-slot:not(.is-promo)'), promoFill); };   // blocked or offline
+      sc.onerror = function () { adsBlocked = true; [].forEach.call(doc.querySelectorAll('.pk-slot.is-ad'), promoFill); };   // blocked or offline
       doc.head.appendChild(sc);
     }
     var ins = el('ins', { 'class': 'adsbygoogle', style: 'display:block', 'data-ad-client': AD_CLIENT, 'data-ad-slot': d.getAttribute('data-slot') });
@@ -317,8 +317,8 @@
   }
   function promoFill(d) {
     if (!d || d.classList.contains('is-promo')) return;
-    // ad blockers hide every box named ad-slot, so the box changes its name before the card goes in
-    d.classList.remove('ad-slot'); d.classList.add('pk-slot', 'is-promo');
+    // the box is never named ad-slot / ad-top (ad blockers hide such boxes, so it would never scroll into view and no card could fill it)
+    d.classList.remove('is-ad'); d.classList.add('pk-slot', 'is-promo');
     getPromos().then(function (list) {
       if (!list.length) { d.classList.add('is-empty'); return; }
       var fresh = list.filter(function (x) { return promoUsed.indexOf(x.href) < 0; });
