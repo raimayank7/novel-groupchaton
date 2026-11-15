@@ -180,6 +180,16 @@ html[data-align='justify'] .rd-text p{text-align:justify;hyphens:auto}
 .promo-card b{font-size:15.5px;line-height:1.35}.promo-card span{color:var(--muted)}
 .promo-card em{font-style:normal;font-weight:600;margin-top:2px;padding:9px 18px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
 .promo-card:hover em{filter:brightness(1.08)}
+/* in a chapter the sponsor card is a wide card: picture on the left, words and button on the right (like the cards on Share) */
+@media (min-width:640px){
+  .pk-slot::before{text-align:left}
+  .pk-slot .promo-card{max-width:none;display:grid;grid-template-columns:auto 1fr;column-gap:20px;row-gap:5px;align-items:center;text-align:left;padding:16px 18px;border-style:dashed;border-radius:16px}
+  .pk-slot .promo-card > :first-child{grid-row:1 / span 4}
+  .pk-slot .promo-card > :not(:first-child){grid-column:2}
+  .pk-slot .promo-card img:not(.promo-ic){width:210px;max-width:210px}
+  .pk-slot .promo-card b{font-size:17px}
+  .pk-slot .promo-card em{justify-self:start;padding:10px 22px}
+}
 
 /* sheets (reading settings, chapter list, download) */
 .backdrop{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s}
