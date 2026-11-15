@@ -28,6 +28,9 @@ def main():
     for f in ('index.html', 'reader.js', 'sw.js'):
         wr(f, stamp(rd(f)))
     shutil.copyfile(os.path.join(ROOT, 'index.html'), os.path.join(ROOT, '404.html'))
+    for slug in ('about', 'privacy-policy', 'disclaimer', 'contact'):   # the app's own pages: real addresses (status 200), same app shell
+        os.makedirs(os.path.join(ROOT, slug), exist_ok=True)
+        shutil.copyfile(os.path.join(ROOT, 'index.html'), os.path.join(ROOT, slug, 'index.html'))
 
     # old Infinity App tool pages (/t/<id>/) → the same tool on Infinity
     tools = json.load(open(os.path.join(ROOT, 'scripts', 'old-tools.json'), encoding='utf-8'))

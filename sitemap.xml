@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://novel.groupchaton.com/</loc><changefreq>daily</changefreq></url>
+  <url><loc>https://novel.groupchaton.com/about/</loc><changefreq>yearly</changefreq></url>
+  <url><loc>https://novel.groupchaton.com/privacy-policy/</loc><changefreq>yearly</changefreq></url>
+  <url><loc>https://novel.groupchaton.com/disclaimer/</loc><changefreq>yearly</changefreq></url>
+  <url><loc>https://novel.groupchaton.com/contact/</loc><changefreq>yearly</changefreq></url>
   <url><loc>https://novel.groupchaton.com/novel/tcf2/</loc><changefreq>weekly</changefreq></url>
   <url><loc>https://novel.groupchaton.com/read/2024/11/v2c1/</loc><lastmod>2024-11-20</lastmod><changefreq>monthly</changefreq></url>
   <url><loc>https://novel.groupchaton.com/read/2024/11/v2c2/</loc><lastmod>2024-11-20</lastmod><changefreq>monthly</changefreq></url>

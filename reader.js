@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.2c406ec';
+  var VERSION = '2026-11-15.e31d92d';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -333,6 +333,7 @@
         : el('span', { 'class': 'promo-ic', 'aria-hidden': 'true', html: PROMO_ICONS[x.icon] || '' });
       d.appendChild(el('a', { 'class': 'promo-card', href: x.href, target: '_blank', rel: x.own ? 'noopener' : 'sponsored noopener' }, [
         pic,
+        el('span', { 'class': 'pk-lbl', text: x.tag || (x.own ? 'From GroupChatOn' : 'Sponsored') }),
         el('b', { text: x.title || '' }),
         x.line ? el('span', { text: x.line }) : null,
         el('em', { text: x.cta || 'Learn more' }), x.small ? el('small', { text: x.small }) : null]));
@@ -433,6 +434,7 @@
     if (/^\/library\/?$/.test(path)) return { name: 'library' };
     if (/^\/search\/?$/.test(path)) return { name: 'search', q: new URLSearchParams(search).get('q') || '' };
     if (/^\/settings\/?$/.test(path)) return { name: 'settings' };
+    if ((m = path.match(/^\/(about|privacy-policy|disclaimer|contact)\/?$/))) return { name: 'page', slug: m[1] };
     if (/^\/old-records\/?$/.test(path)) return { name: 'old' };
     if ((m = path.match(/^\/t\/([\w-]+)/))) return { name: 'moved', id: m[1] };
     // a blog address pasted or shared into the app: /2025/02/chd1.html
@@ -466,7 +468,7 @@
     var d = $('meta[name="description"]'); if (d && desc) d.setAttribute('content', desc);
     var c = $('#canon'); if (c) c.href = canon || 'https://novel.groupchaton.com/';
     var r = $('meta[name="robots"]');
-    var index = route.name === 'home' || route.name === 'read' || route.name === 'novel';   // home, novel and chapter pages are this site's own pages (in sitemap.xml)
+    var index = route.name === 'home' || route.name === 'read' || route.name === 'novel' || route.name === 'page';   // home, novel and chapter pages are this site's own pages (in sitemap.xml)
     if (index && r) r.remove();
     if (!index && !r) doc.head.appendChild(el('meta', { name: 'robots', content: 'noindex' }));
   }
@@ -539,8 +541,8 @@
   function footer() {
     return el('footer', { 'class': 'foot' }, [
       el('div', { 'class': 'links', style: 'justify-content:center' }, [
-        el('a', { href: WWW + '/', text: 'www.groupchaton.com' }), el('a', { href: WWW + '/p/privacy-policy.html', text: 'Privacy policy' }),
-        el('a', { href: WWW + '/p/disclaimer.html', text: 'Disclaimer' }), el('a', { href: WWW + '/p/contact-us.html?from=app', text: 'Contact' })]),
+        el('a', { href: '/about/', text: 'About' }), el('a', { href: '/privacy-policy/', text: 'Privacy policy' }),
+        el('a', { href: '/disclaimer/', text: 'Disclaimer' }), el('a', { href: '/contact/', text: 'Contact' })]),
       el('p', { html: '© ' + new Date().getFullYear() + ' GroupChatOn. All rights reserved. · Designed &amp; Developed by: <a href="https://www.niveshsahayak.in/" rel="noopener" target="_blank">Nivesh Sahayak</a>' })]);
   }
   // Blogger serves any size of a picture: ask for a small one instead of the 1600px original
@@ -802,6 +804,7 @@
         if (endAd) w.insertBefore(endAd, bar);
         if (credits) w.insertBefore(credits, bar);
         w.insertBefore(endNav(n, next, prev), bar);
+        w.insertBefore(chapTools(n, ch, r.key), bar);
         if (n) {
           var p0 = posOf(r.key);
           setHist(n, c, p0);
@@ -1020,8 +1023,8 @@
           el('dt', { text: 'Website' }), el('dd', {}, [el('a', { href: WWW + '/', text: 'www.groupchaton.com' })])]),
         el('p', { text: 'The app shows every GroupChatOn novel and chapter and checks for new chapters by itself. Your library, reading position and settings stay in this browser only.' }),
         el('p', {}, ['Record tools (invoices, khata, money manager…) are on ', el('a', { href: INF + '/', text: 'Infinity' }), '.']),
-        el('div', { 'class': 'links' }, [el('a', { href: WWW + '/p/privacy-policy.html', text: 'Privacy policy' }), el('a', { href: WWW + '/p/disclaimer.html', text: 'Disclaimer' }),
-          el('a', { href: WWW + '/p/contact-us.html?from=app', text: 'Contact us' }), el('a', { href: WWW + '/', text: 'About GroupChatOn' })]),
+        el('div', { 'class': 'links' }, [el('a', { href: '/privacy-policy/', text: 'Privacy policy' }), el('a', { href: '/disclaimer/', text: 'Disclaimer' }),
+          el('a', { href: '/contact/', text: 'Contact us' }), el('a', { href: '/about/', text: 'About GroupChatOn' })]),
         el('p', { 'class': 'copy', html: '© ' + new Date().getFullYear() + ' GroupChatOn. All rights reserved.<br>Designed &amp; Developed by: <a href="https://www.niveshsahayak.in/" rel="noopener" target="_blank">Nivesh Sahayak</a>' })]));
       if (!DATA) loadData().then(function () { if (route.name === 'settings') render(); }).catch(function () {});
       return w;
@@ -1095,6 +1098,162 @@
     setMeta('Page not found', '');
     return el('div', { 'class': 'wrap' }, [el('h1', { text: 'Page not found' }), el('p', { text: 'This page is not in the app.' }),
       el('div', { 'class': 'row' }, [el('a', { 'class': 'btn btn-primary', href: '/', text: 'Go to Home' }), el('a', { 'class': 'btn', href: '/search/', text: 'Search' })])]);
+  };
+
+  /* ---------------- messages (report a mistake, contact) and comments ---------------- */
+  /* Messages go by e-mail through FormSubmit (formsubmit.co); the address is a code, not an e-mail address.
+     Comments are Disqus, loaded only when the reader taps "Show comments" (same Disqus site and thread ids as the old blog). */
+  var FORM_URL = 'https://formsubmit.co/ajax/08205137b14cf6d7ee97865c8e748e9c', DISQUS = 'group4whatsapp';
+  function sendMessage(subject, f) {
+    if (Date.now() - (+store.get('gco-app-sent', 0) || 0) < 45000) return Promise.resolve({ ok: false, msg: 'Please wait a minute before sending another message.' });
+    var body = { _subject: '[GroupChatOn app] ' + subject, _captcha: 'false', _template: 'table', name: f.name || 'Reader', message: f.message, page: location.href, _honey: '' };
+    if (f.email) body.email = f.email;
+    return fetch(FORM_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (j) {
+        if (j.success === true || j.success === 'true') { store.set('gco-app-sent', Date.now()); return { ok: true }; }
+        return { ok: false, msg: 'We could not send that just now. Please try again in a little while.' };
+      }, function () { return { ok: false, msg: navigator.onLine ? 'We could not send that just now. Please try again in a little while.' : 'You are offline. Please send it when you are connected.' }; });
+  }
+  /* a small form: fields = [{ key, label, type: text|email|textarea|select, required, options, hint, rows }] */
+  function formBox(fields, submitText, make, thanks) {
+    var me = store.get('gco-contact', {}), form = el('form', { 'class': 'fm', novalidate: 'novalidate' }), inp = {};
+    fields.forEach(function (f) {
+      var c;
+      if (f.type === 'textarea') c = el('textarea', { rows: f.rows || 4, maxlength: 4000 });
+      else if (f.type === 'select') c = el('select', {}, f.options.map(function (o) { return el('option', { value: o, text: o }); }));
+      else c = el('input', { type: f.type || 'text', maxlength: 200, autocomplete: f.key === 'email' ? 'email' : f.key === 'name' ? 'name' : 'off' });
+      if (f.key === 'name' || f.key === 'email') c.value = me[f.key] || '';
+      inp[f.key] = c;
+      form.appendChild(el('label', { 'class': 'fm-field' }, [el('span', { text: f.label + (f.required ? '' : ' (optional)') }), c, f.hint ? el('small', { text: f.hint }) : null]));
+    });
+    var status = el('div', { 'class': 'fm-status', role: 'status' }), btn = el('button', { type: 'submit', 'class': 'btn btn-primary', text: submitText });
+    form.appendChild(el('div', { 'class': 'row' }, [btn]));
+    form.appendChild(status);
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = {};
+      for (var i = 0; i < fields.length; i++) {
+        var f = fields[i]; v[f.key] = (inp[f.key].value || '').trim();
+        if (f.required && !v[f.key]) { status.className = 'fm-status is-error'; status.textContent = 'Please fill in: ' + f.label + '.'; inp[f.key].focus(); return; }
+        if (f.type === 'email' && v[f.key] && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v[f.key])) { status.className = 'fm-status is-error'; status.textContent = 'That e-mail address does not look right.'; inp[f.key].focus(); return; }
+      }
+      store.set('gco-contact', { name: v.name || '', email: v.email || '' });
+      var m = make(v);
+      btn.disabled = true; status.className = 'fm-status'; status.textContent = 'Sending…';
+      sendMessage(m.subject, { name: v.name, email: v.email, message: m.message }).then(function (r) {
+        btn.disabled = false;
+        status.className = 'fm-status ' + (r.ok ? 'is-ok' : 'is-error');
+        status.textContent = r.ok ? thanks : r.msg;
+        if (r.ok) fields.forEach(function (f) { if (f.type === 'textarea') inp[f.key].value = ''; });
+      });
+    });
+    return form;
+  }
+  function openReport(ctx) {
+    var form = formBox([
+      { key: 'kind', label: 'What kind of mistake?', type: 'select', required: true, options: ['Typo', 'Wrong name or word', 'Missing or repeated text', 'Other'] },
+      { key: 'quote', label: 'The text with the mistake', type: 'textarea', rows: 3, hint: 'Copy a few words so we can find it.' },
+      { key: 'fix', label: 'What it should say', type: 'textarea', rows: 3 },
+      { key: 'name', label: 'Your name' },
+      { key: 'email', label: 'Your e-mail', type: 'email', hint: 'Only if you would like a reply.' }],
+      'Send report', function (v) {
+        if (!v.quote && !v.fix) v.quote = '-';
+        return { subject: '[Report] ' + v.kind + ' · ' + ctx.novel + ' · ' + ctx.title,
+          message: ['[Report] ' + v.kind, 'Where: ' + ctx.novel + ' · ' + ctx.title, ctx.url, '', 'Text: ' + (v.quote || '-'), '', 'Should be: ' + (v.fix || '-')].join('\n') };
+      }, 'Thank you! We will fix it soon.');
+    var s = sheet('Report a mistake', form);
+    setTimeout(function () { var q = $('textarea', form); if (q) q.focus(); }, 280);
+    return s;
+  }
+  function chapTools(n, ch, key) {
+    var url = SELF + '/read/' + key + '/', title = ch.t || key, novel = n ? novelName(n) : 'GroupChatOn';
+    var thread = el('div', { id: 'disqus_thread' }), note = el('p', { 'class': 'muted fm-note', text: 'Comments are run by Disqus. Please be kind, mark spoilers and do not share links to pirated copies.' });
+    var cbtn = el('button', { type: 'button', 'class': 'btn', text: 'Show comments' });
+    cbtn.addEventListener('click', function () {
+      if (!navigator.onLine) { note.textContent = 'You are offline. Comments need an internet connection.'; return; }
+      cbtn.hidden = true;
+      window.disqus_config = function () { this.page.url = url; this.page.identifier = ch.id || key; };
+      if (window.DISQUS) { window.DISQUS.reset({ reload: true, config: window.disqus_config }); return; }
+      var sc = el('script', { src: 'https://' + DISQUS + '.disqus.com/embed.js', async: true });
+      sc.setAttribute('data-timestamp', String(+new Date()));
+      sc.onerror = function () { cbtn.hidden = false; note.textContent = 'Comments could not load (an ad or tracking blocker can stop them). Please try again.'; };
+      doc.body.appendChild(sc);
+    });
+    return el('section', { 'class': 'chap-tools', 'aria-label': 'Comments and reports' }, [
+      el('div', { 'class': 'row' }, [cbtn, el('button', { type: 'button', 'class': 'btn', text: 'Report a mistake', onclick: function () { openReport({ novel: novel, title: title, url: url }); } })]),
+      thread, note]);
+  }
+
+  /* ---------------- the app's own About, Privacy policy, Disclaimer and Contact pages ---------------- */
+  var LEGAL = {
+    about: { title: 'About GroupChatOn', desc: 'GroupChatOn is a small fan-run project that shares carefully proofread English chapters of Korean web novels, free, in a comfortable reading app.',
+      html: `<p class="lead">GroupChatOn is a small fan-run project where readers enjoy carefully proofread English chapters of Korean web novels, free and in a comfortable reading layout.</p>
+<h2>What we do</h2>
+<p>We take existing fan translations, proofread them line by line for grammar, names and flow, and publish them in reading order with easy chapter navigation. Our current series are listed on the <a href="/">home page</a>.</p>
+<h2>Who we are</h2>
+<p>GroupChatOn is run by Mayank, a reader who started proofreading favourite series so more people could enjoy them, together with the translators credited at the end of every chapter.</p>
+<h2>Made for reading</h2>
+<ul><li>Light, sepia, dark and black themes, with adjustable font, size and spacing.</li><li>Your place is remembered, so you can continue where you left off.</li><li>Chapters you open stay on your device, so you can keep reading offline.</li><li>Ads are kept light and placed so they never interrupt a scene.</li></ul>
+<h2>Respecting the authors</h2>
+<p>Every novel belongs to its original author and publisher. If you can, please support the official release. Rights holders can reach us through the <a href="/contact/">contact page</a> and we respond quickly. See our <a href="/disclaimer/">disclaimer</a>.</p>
+<h2>Free tools</h2>
+<p>We also offer free online tools for PDFs, images, text and links on <a href="https://infinity.groupchaton.com" rel="noopener">Infinity</a>.</p>
+<h2 id="comments">Comment rules</h2>
+<p>Be kind, mark spoilers (start with “Spoiler:”), no spam or referral links, no personal details, stay on topic, and no links to pirated copies. We may remove comments that break these rules. Found a typo? Use “Report a mistake” at the end of a chapter: it reaches us faster than a comment.</p>
+<p><a class="btn btn-primary" href="/contact/">Contact us</a></p>` },
+    'privacy-policy': { title: 'Privacy policy', desc: 'What the GroupChatOn app stores, which services it uses, and the choices you have.',
+      html: `<p class="muted">Last updated: 15 November 2026</p>
+<p class="lead">This policy explains what information the GroupChatOn app (novel.groupchaton.com) collects when you use it, how it is used and the choices you have.</p>
+<h2>Information you give us</h2>
+<p>When you use the contact form or “Report a mistake”, you send us your name (optional), your e-mail address (needed only if you want a reply) and your message. The message reaches us by e-mail through the FormSubmit service. We use it only to reply and to fix or plan chapters, and we never sell or share it.</p>
+<h2>Stored on your own device</h2>
+<p>To make reading comfortable, your browser saves your reading settings (theme, font, size), your library, the chapters you read and where you stopped, the chapters you opened for offline reading and, if you send us a message, your name and e-mail so you do not have to type them again. This stays in your browser; we do not receive it. You can delete it by clearing this site’s data in your browser settings.</p>
+<h2>Services the app uses</h2>
+<ul>
+<li><b>Google AdSense</b> shows ads. Google and its partners use cookies to show ads based on your visits to this and other websites. You can turn off personalised ads at <a href="https://adssettings.google.com" rel="noopener" target="_blank">adssettings.google.com</a>. When no Google ad is available, the app may show a card for a partner or for another GroupChatOn site instead.</li>
+<li><b>Disqus</b> runs the comments. It loads only when you tap “Show comments”, and its own <a href="https://help.disqus.com/en/articles/1717103-disqus-privacy-policy" rel="noopener" target="_blank">privacy policy</a> applies.</li>
+<li><b>FormSubmit</b> delivers the messages you send us by e-mail, and may keep a copy for a short time.</li>
+<li><b>GitHub Pages</b> hosts this app and keeps standard server logs such as IP addresses. Chapter pictures are served by Google’s image hosting.</li>
+</ul>
+<h2>Cookies</h2>
+<p>The app itself does not set tracking cookies. Cookies are set by Google (ads) and Disqus (comments) when those parts load. You can block or delete cookies in your browser settings; the app will still work, but ads may become less relevant.</p>
+<h2>Children</h2>
+<p>The app is not directed at children under 13, and we do not knowingly collect their personal information.</p>
+<h2>Your rights</h2>
+<p>You can ask us what personal information we hold about you, or ask us to delete it, through the <a href="/contact/">contact page</a>. Depending on where you live (for example under GDPR or CCPA), you may have further rights, and we will honour them.</p>
+<h2>Changes</h2>
+<p>We may update this policy; the date at the top shows the latest version.</p>` },
+    disclaimer: { title: 'Disclaimer', desc: 'GroupChatOn is a non-commercial fan project sharing proofread, unofficial English translations of Korean web novels.',
+      html: `<p class="muted">Last updated: 15 November 2026</p>
+<p class="lead">GroupChatOn is a non-commercial fan project sharing proofread, unofficial English translations of Korean web novels. By using the app you accept the points below.</p>
+<h2>Copyright</h2>
+<p>All novels, characters and original texts belong to their authors and publishers. GroupChatOn does not claim ownership of any work it presents. Translators and authors are credited on every chapter. Please support the official releases where they exist.</p>
+<h2>Requests from rights holders</h2>
+<p>If you own the rights to a work in the app and want it changed or removed, contact us through the <a href="/contact/">contact page</a> with the page links and your relationship to the work. We act on valid requests promptly.</p>
+<h2>Accuracy</h2>
+<p>We proofread carefully, but translations may still contain mistakes or differ from the original. Content is provided “as is”, for entertainment. If you spot a mistake, please use “Report a mistake” at the end of the chapter.</p>
+<h2>External links and ads</h2>
+<p>We link to other websites and show ads from Google and cards for partners. We are not responsible for their content, products or privacy practices.</p>
+<h2>No affiliation</h2>
+<p>GroupChatOn is independent. It is not affiliated with the authors, publishers or platforms of the original works, or with Google.</p>` },
+    contact: { title: 'Contact us', desc: 'Send a message to GroupChatOn: questions, feedback, novel requests or a request from a rights holder.', form: true,
+      html: `<p class="lead">Questions, feedback, a novel you would like to read, or a request from a rights holder: write to us here and we will get back to you.</p>
+<p>Found a typo in a chapter? Please use <b>Report a mistake</b> at the end of that chapter: it comes with the chapter’s name already filled in.</p>` }
+  };
+  PAGES.page = function (r) {
+    var p = LEGAL[r.slug];
+    if (!p) return PAGES.notfound();
+    setMeta(p.title, p.desc, SELF + '/' + r.slug + '/');
+    var w = el('div', { 'class': 'wrap page-doc', style: 'max-width:720px' }, [el('h1', { text: p.title }), el('div', { 'class': 'doc-body', html: p.html })]);
+    if (p.form) w.appendChild(el('section', { 'class': 'set-sec card' }, [formBox([
+      { key: 'name', label: 'Your name' },
+      { key: 'email', label: 'Your e-mail', type: 'email', required: true, hint: 'So we can reply.' },
+      { key: 'topic', label: 'About', type: 'select', required: true, options: ['A question', 'Feedback', 'Request a novel', 'Rights holder request', 'Something else'] },
+      { key: 'message', label: 'Your message', type: 'textarea', rows: 6, required: true }],
+      'Send message', function (v) { return { subject: '[Contact] ' + v.topic, message: ['[Contact] ' + v.topic, '', v.message].join('\n') }; }, 'Thank you! Your message is in; we will reply by e-mail.')]));
+    w.appendChild(footer());
+    return w;
   };
 
   /* ---------------- start ---------------- */

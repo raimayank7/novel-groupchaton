@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GroupChatOn: read Korean web novels in the app</title>
+<meta name="description" content="The GroupChatOn app: read every novel from www.groupchaton.com, follow your favourites, continue where you stopped and keep chapters for offline reading. Free.">
+<link rel="canonical" id="canon" href="https://novel.groupchaton.com/">
+<script>
+  /* before the first paint: reading theme, font size and the right canonical address for this screen.
+     Settings use the same names as www.groupchaton.com's Aa sheet. Designed & Developed by Nivesh Sahayak. */
+  (function () {
+    var d = document.documentElement, s = {};
+    try { s = JSON.parse(localStorage.getItem('gco-reader') || '{}') || {}; } catch (e) {}
+    var t = s.theme || 'auto';
+    if (t === 'auto') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    d.setAttribute('data-theme', t);
+    d.setAttribute('data-font', s.font || 'serif');
+    d.setAttribute('data-align', s.align || 'left');
+    d.style.setProperty('--rd-size', (s.size || 19) + 'px');
+    d.style.setProperty('--rd-lh', s.lh || 1.8);
+    d.style.setProperty('--rd-measure', ({ s: '600px', m: '700px', l: '820px' })[s.width] || '700px');
+    if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) d.classList.add('is-installed');
+    var p = location.pathname, c = document.getElementById('canon');
+    // novel.groupchaton.com is the indexed reading site; self-canonical for /read/ and /novel/ paths
+    if (p !== '/' && p !== '/index.html') {
+      if (/^\/(read|novel)\//.test(p)) {
+        c.href = 'https://novel.groupchaton.com' + p.replace(/\/$/, '') + '/';
+      } else {
+        var r = document.createElement('meta'); r.name = 'robots'; r.content = 'noindex'; document.head.appendChild(r);
+      }
+    }
+  })();
+</script>
+<meta name="theme-color" content="#fbfaf7">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="/app.webmanifest">
+<link rel="icon" href="/brand/favicon-32.png" sizes="32x32">
+<link rel="icon" href="/brand/favicon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="GroupChatOn">
+<meta name="application-name" content="GroupChatOn">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="GroupChatOn">
+<meta property="og:title" content="GroupChatOn: the reading app">
+<meta property="og:description" content="Read every GroupChatOn novel in the app: follow novels, continue where you stopped, read offline.">
+<meta property="og:url" content="https://novel.groupchaton.com/">
+<meta property="og:image" content="https://novel.groupchaton.com/brand/share-banner.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"GroupChatOn","url":"https://novel.groupchaton.com/","applicationCategory":"BookApplication","operatingSystem":"Any (installs from the browser)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Read every novel from www.groupchaton.com: follow novels, continue where you stopped and read offline.","publisher":{"@id":"https://www.groupchaton.com/#org"}},{"@type":"Organization","@id":"https://www.groupchaton.com/#org","name":"GroupChatOn","url":"https://www.groupchaton.com/","logo":"https://novel.groupchaton.com/brand/favicon-512.png"}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Literata:ital,opsz,wght@0,7..72,400..800;1,7..72,400&display=swap">
+<style>
+  /* critical styles: colours, header and the loading skeleton show from the very first paint */
+  :root{--bg:#fbfaf7;--surface:#fff;--surface-2:#f3f1ec;--ink:#1d1f22;--ink-soft:#3b3f45;--muted:#646b74;--line:#e6e2d9;--accent:#2c8a3a;--accent-soft:#e8f3e6;--accent-ink:#fff;
+    --ui:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--head:'Literata',Georgia,'Times New Roman',serif;--top:60px;color-scheme:light}
+  html[data-theme='sepia']{--bg:#f4ecd8;--surface:#fbf5e6;--surface-2:#efe4c9;--ink:#43341f;--ink-soft:#5a4930;--muted:#7c6b52;--line:#e2d4b2;--accent:#8b5a1c;--accent-soft:#efdfbd;--accent-ink:#fffaf0}
+  html[data-theme='dark']{--bg:#15171a;--surface:#1c1f23;--surface-2:#23272c;--ink:#dedad1;--ink-soft:#c4c0b7;--muted:#9aa1a9;--line:#2c3036;--accent:#6cc46a;--accent-soft:#1f3320;--accent-ink:#0d1a0d;color-scheme:dark}
+  html[data-theme='black']{--bg:#000;--surface:#0b0b0c;--surface-2:#141416;--ink:#c9c6bf;--ink-soft:#b3b0a9;--muted:#8a8c90;--line:#1e1f22;--accent:#5fb45d;--accent-soft:#132213;--accent-ink:#000;color-scheme:dark}
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--ui);-webkit-font-smoothing:antialiased}
+  .top{position:sticky;top:0;z-index:40;height:calc(var(--top) + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background:var(--bg);border-bottom:1px solid var(--line)}
+  .top-in{display:flex;align-items:center;gap:8px;max-width:1120px;height:var(--top);margin:0 auto;padding:0 12px}
+  .logo{display:flex;align-items:center;height:52px;flex:0 0 auto}.logo img{height:44px;width:auto;display:block}
+  @media (max-width:520px){.logo img{height:34px}}
+  .logo .logo-dark,html[data-theme='dark'] .logo .logo-light,html[data-theme='black'] .logo .logo-light{display:none}
+  html[data-theme='dark'] .logo .logo-dark,html[data-theme='black'] .logo .logo-dark{display:block}
+  .wrap{max-width:1120px;margin:0 auto;padding:20px 16px 110px}
+  .sk{border-radius:12px;background:linear-gradient(90deg,var(--surface-2) 25%,var(--line) 50%,var(--surface-2) 75%);background-size:300% 100%;animation:sk 1.4s ease-in-out infinite}
+  @keyframes sk{0%{background-position:100% 0}100%{background-position:0 0}}
+  @media (prefers-reduced-motion:reduce){.sk{animation:none}}
+  .sk-line{height:16px;margin:10px 0}.sk-title{height:30px;width:60%;margin:8px 0 22px}
+  .sk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px;margin-top:24px}.sk-card{aspect-ratio:2/3}
+  #main{outline:0}
+  #main.is-in{animation:fadein .25s ease-out}@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+</style>
+<link rel="stylesheet" href="/reader.css?v=2026-11-15.e31d92d">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top" id="top">
+  <div class="top-in">
+    <a class="logo" href="/" aria-label="GroupChatOn home" data-nav>
+      <img class="logo-light" src="/brand/logo-light.png" alt="GroupChatOn" width="131" height="30">
+      <img class="logo-dark" src="/brand/logo-dark.png" alt="GroupChatOn" width="131" height="30">
+    </a>
+    <nav class="tabs" id="tabs" aria-label="App"></nav>
+    <div class="top-act" id="topAct"></div>
+  </div>
+</header>
+<main id="main" tabindex="-1">
+  <div class="wrap" aria-busy="true" aria-label="Loading">
+    <div class="sk sk-title"></div>
+    <div class="sk sk-line"></div><div class="sk sk-line" style="width:80%"></div>
+    <div class="sk-grid"><div class="sk sk-card"></div><div class="sk sk-card"></div><div class="sk sk-card"></div><div class="sk sk-card"></div></div>
+  </div>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<noscript><div class="wrap"><p>The GroupChatOn app needs JavaScript. Please turn JavaScript on to read the novels here.</p></div></noscript>
+<script src="/reader.js?v=2026-11-15.e31d92d" defer></script>
+</body>
+</html>

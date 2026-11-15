@@ -328,6 +328,8 @@ APP = 'https://novel.groupchaton.com'
 def save_sitemap(novels):
     """Write sitemap.xml: home + one /novel/<id>/ page per series + every chapter /read/<key>/."""
     urls = [f'  <url><loc>{APP}/</loc><changefreq>daily</changefreq></url>']
+    for slug in ('about', 'privacy-policy', 'disclaimer', 'contact'):
+        urls.append(f'  <url><loc>{APP}/{slug}/</loc><changefreq>yearly</changefreq></url>')
     for n in novels:
         urls.append(f'  <url><loc>{APP}/novel/{n["id"]}/</loc><changefreq>weekly</changefreq></url>')
         for key, _title, pub, _w in n['chapters']:
