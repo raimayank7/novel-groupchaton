@@ -7,9 +7,8 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-12.94a7c54';
+  var VERSION = '2026-11-15.e50e710';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
-  var BLOG = 'https://groupchaton-novels.blogspot.com';   /* where chapters are written; www is the family's start page since Nov 2026 */
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
   var CH_CACHE = 'gcr-chapters';
@@ -189,6 +188,7 @@
   // brand-new chapters, straight from Blogger's feed (JSONP: the feed has no CORS headers)
   var freshDone = false;
   function freshFromBlog() {
+    return;   /* the app never contacts the chapter source; new chapters arrive with the hourly copy */
     if (freshDone || !navigator.onLine) return;
     freshDone = true;
     var cb = '__gcoFresh' + Date.now();
@@ -798,8 +798,8 @@
       }, function (e) {
         text.innerHTML = '';
         if (e.missing || (c && c[4])) {
-          text.appendChild(el('div', { 'class': 'note' }, [el('p', {}, [el('b', { text: 'Just published! ' }), 'The app gets its own copy of new chapters within about an hour. You can read it on the website right now.']),
-            el('div', { 'class': 'row' }, [el('a', { 'class': 'btn btn-primary btn-sm', href: BLOG + '/' + r.key + '.html', html: icon('ext', 'Open the chapter page') })])]));
+          text.appendChild(el('div', { 'class': 'note' }, [el('p', {}, [el('b', { text: 'Just published! ' }), 'The app gets its own copy of new chapters within about an hour. Please check back soon.']),
+            el('div', { 'class': 'row' }, [el('button', { type: 'button', 'class': 'btn btn-sm', text: 'Try again', onclick: function () { render(); } })])]));
         } else {
           text.appendChild(el('div', { 'class': 'note' }, [el('p', { text: navigator.onLine ? 'This chapter did not load. Check your internet connection and try again. Chapters you opened or downloaded before open without internet: see your Library.' : 'You are offline and this chapter is not saved on this device yet. Connect to the internet, or open a downloaded chapter from your Library.' }),
             el('div', { 'class': 'row' }, [el('button', { type: 'button', 'class': 'btn btn-sm', text: 'Try again', onclick: function () { render(); } })])]));
