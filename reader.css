@@ -129,7 +129,7 @@ h2{font-size:clamp(20px,3.6vw,24px);margin:32px 0 14px}
 .rd-chips span{font:500 12px/1 var(--ui);padding:5px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
 .rd-stat{color:var(--muted);font-size:12.5px;margin-bottom:10px}
 .rd-chap{min-height:36px}
-@media (min-width:1240px){
+@media (min-width:1320px){
   .reader{position:relative}
   .rd-side{position:absolute;right:calc(100% + 20px);top:18px;bottom:40px;width:268px;margin:0}
   .rd-card{position:sticky;top:84px;flex-direction:column;align-items:stretch;padding:14px}
