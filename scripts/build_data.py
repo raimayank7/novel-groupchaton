@@ -301,9 +301,35 @@ def main():
             if os.path.normcase(fp) not in keep:
                 os.remove(fp)
 
+    # each chapter's own picture (the cover block at the top of its saved copy): a short table of the different pictures + an index per chapter
+    base = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/'
+    table, where, cimg = [], {}, {}
+    cdir = os.path.join(ROOT, 'c')
+    for dirpath, _, files in os.walk(cdir):
+        for fn in files:
+            if not fn.endswith('.json'):
+                continue
+            fp = os.path.join(dirpath, fn)
+            try:
+                h = json.load(open(fp, encoding='utf-8')).get('h', '')
+            except Exception:
+                continue
+            m = re.match(r'\s*(?:<a [^>]*>)?\s*<img src="([^"]+)"', h)
+            if not m or not m.group(1).startswith(base):
+                continue
+            u = m.group(1)[len(base):]
+            if u not in where:
+                where[u] = len(table); table.append(u)
+            cimg[os.path.relpath(fp, cdir).replace(os.sep, '/')[:-5]] = where[u]
+    for n in novels:
+        for c in n['chapters']:
+            del c[4:]
+            if c[0] in cimg:
+                c.extend([0, cimg[c[0]]])
     latest = sorted(((c[2], n['id'], c[0], c[1]) for n in novels for i, c in enumerate(n['chapters'])), reverse=True)[:30]
     data = {'built': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'site': SITE,
             'novels': sorted(novels, key=lambda n: max((c[2] for c in n['chapters']), default=''), reverse=True),
+            'imgs': table,
             'latest': [[x[1], x[2], x[3], x[0]] for x in latest]}
     os.makedirs(os.path.join(ROOT, 'data'), exist_ok=True)
     try:  # nothing new: keep the old time stamp, so the hourly run has nothing to commit
@@ -332,7 +358,7 @@ def save_sitemap(novels):
         urls.append(f'  <url><loc>{APP}/{slug}/</loc><changefreq>yearly</changefreq></url>')
     for n in novels:
         urls.append(f'  <url><loc>{APP}/novel/{n["id"]}/</loc><changefreq>weekly</changefreq></url>')
-        for key, _title, pub, _w in n['chapters']:
+        for key, _title, pub in [c[:3] for c in n['chapters']]:
             urls.append(f'  <url><loc>{APP}/read/{key}/</loc><lastmod>{pub}</lastmod><changefreq>monthly</changefreq></url>')
     xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

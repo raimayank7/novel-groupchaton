@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.2fb45f8';
+  var VERSION = '2026-11-15.8c69a40';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -547,6 +547,13 @@
   }
   // Blogger serves any size of a picture: ask for a small one instead of the 1600px original
   function coverUrl(u, w) { return (u || '').replace(/\/(s\d+(-c)?|w\d+(-h\d+)?(-[a-z]+)*)\/([^/]+)$/, '/w' + w + '/$5'); }
+  /* a chapter's own picture (data.imgs + chapter entry [5]); the novel's cover when the chapter has none */
+  var IMGBASE = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/';
+  function chapImg(n, key, cls) {
+    var i = n.idx ? n.idx[key] : null, c = i != null ? n.chapters[i] : null, u = c && c.length > 5 && DATA && DATA.imgs ? DATA.imgs[c[5]] : null;
+    if (!u) return cover(n, cls);
+    return el('img', { 'class': cls || '', src: (IMGBASE + u).replace(/\/(s\d+|w\d+)(-[a-z0-9]+)*\/([^\/]+)$/, '/w240/$3'), alt: '', loading: 'lazy', decoding: 'async', width: '200', height: '300' });
+  }
   function cover(n, cls, w, eager) { return el('img', { 'class': cls || '', src: coverUrl(n.cover, w || 320), alt: '', loading: eager ? 'eager' : 'lazy', decoding: 'async', width: '200', height: '300' }); }
   function novelName(n) { return n.title + (n.part ? ' · ' + n.part : ''); }
 
@@ -578,7 +585,7 @@
       var ul = el('ul', { 'class': 'list' });
       d.latest.slice(0, 20).forEach(function (x) {
         var n = d.byId[x[0]]; if (!n) return;
-        ul.appendChild(el('li', {}, [el('a', { href: '/read/' + x[1] + '/' }, [cover(n), el('span', { 'class': 't' }, [el('b', { text: x[2] }), el('small', { text: novelName(n) })]), el('span', { 'class': 'r', text: ago(x[3]) })])]));
+        ul.appendChild(el('li', {}, [el('a', { href: '/read/' + x[1] + '/' }, [chapImg(n, x[1]), el('span', { 'class': 't' }, [el('b', { text: x[2] }), el('small', { text: novelName(n) })]), el('span', { 'class': 'r', text: ago(x[3]) })])]));
       });
       w.appendChild(ul);
       w.appendChild(el('div', { id: 'installSlot' }));
@@ -604,7 +611,7 @@
   function contCard(n, h) {
     h = resume(n, h) || h;
     var i = n.idx[h.k], pct = n.chapters.length ? Math.round(((i || 0) + (h.p || 0)) / n.chapters.length * 100) : 0;
-    return el('a', { 'class': 'cont', href: '/read/' + h.k + '/' }, [cover(n),
+    return el('a', { 'class': 'cont', href: '/read/' + h.k + '/' }, [chapImg(n, h.k),
       el('span', { style: 'flex:1;min-width:0' }, [el('small', { text: 'Continue reading' }), el('b', { text: novelName(n) }), el('small', { text: h.t }),
         el('span', { 'class': 'bar', 'aria-label': pct + '% of the novel' }, [el('span', { style: 'width:' + pct + '%' })])]),
       el('span', { 'class': 'go', html: icon('next') })]);
