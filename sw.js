@@ -9,21 +9,21 @@
    It replaces the old "Infinity App" service worker of this address: its caches are removed when this one starts.
    (Records saved by the old Infinity App are in IndexedDB/localStorage, never in these caches, so they are not touched.)
    Designed & Developed by Nivesh Sahayak. See LICENSE. */
-var VERSION = '2026-11-15.ef5fa42';
+var VERSION = '2026-11-15.87f3a75';
 var SHELL = 'gcr-shell-' + VERSION, CHAPTERS = 'gcr-chapters', DATA = 'gcr-data', EXT = 'gcr-ext', IMG = 'gcr-img', SPON = 'gcr-sponsor';
 
 // the sponsor list and all its pictures; pictures of sponsors that were removed are dropped
 function saveSponsors(res) {
   return caches.open(SPON).then(function (c) {
-    return (res ? Promise.resolve(res) : fetch('/data/promos.json', { cache: 'no-cache' })).then(function (r) {
+    return (res ? Promise.resolve(res) : fetch('/data/cards.json', { cache: 'no-cache' })).then(function (r) {
       if (!r || !r.ok) return;
-      return c.put('/data/promos.json', r.clone()).then(function () { return r.json(); }).then(function (P) {
+      return c.put('/data/cards.json', r.clone()).then(function () { return r.json(); }).then(function (P) {
         var imgs = [];
-        ((P && P.promos) || []).forEach(function (x) { (x.imgs || []).forEach(function (u) { imgs.push(u); }); });
+        ((P && P.promos) || []).forEach(function (x) { (x.imgs || []).forEach(function (u) { imgs.push(u); }); if (x.img_icon) imgs.push(x.img_icon); });
         return c.keys().then(function (ks) {
-          ks.forEach(function (k) { if (/^https?:/.test(k.url) && !/\/data\/promos\.json$/.test(k.url) && imgs.indexOf(k.url) < 0) c.delete(k); });
+          ks.forEach(function (k) { if (/^https?:/.test(k.url) && !/\/data\/cards\.json$/.test(k.url) && imgs.indexOf(k.url) < 0) c.delete(k); });
           return Promise.all(imgs.map(function (u) {
-            return c.match(u).then(function (hit) { return hit || fetch(new Request(u, { mode: 'no-cors' })).then(function (ir) { return c.put(u, ir); }); }).catch(function () {});
+            return c.match(u).then(function (hit) { return hit || fetch(/^https?:/.test(u) ? new Request(u, { mode: 'no-cors' }) : u).then(function (ir) { return c.put(u, ir); }); }).catch(function () {});
           }));
         });
       });
@@ -32,8 +32,8 @@ function saveSponsors(res) {
 }
 var FILES = [
  "/",
- "/reader.js?v=2026-11-15.ef5fa42",
- "/reader.css?v=2026-11-15.ef5fa42",
+ "/reader.js?v=2026-11-15.87f3a75",
+ "/reader.css?v=2026-11-15.87f3a75",
  "/app.webmanifest",
  "/brand/logo-light.png",
  "/brand/logo-dark.png",
@@ -67,7 +67,7 @@ self.addEventListener('fetch', function (e) {
   if (url.origin === location.origin) {
     var p = url.pathname;
     // the old tool addresses are small redirect pages to Infinity: always from the network
-    if (/^\/t\//.test(p)) {
+    if (/^\/(t|go)\//.test(p)) {
       if (req.mode === 'navigate') e.respondWith(fetch(req).catch(function () { return caches.match('/', { cacheName: SHELL }); }));
       return;
     }
@@ -86,9 +86,9 @@ self.addEventListener('fetch', function (e) {
         .catch(function () { return caches.match('/data/novels.json').then(function (hit) { return hit || fetch(req); }); }));
       return;
     }
-    if (p === '/data/promos.json') {   // sponsor list: fresh when online (its pictures saved), saved copy offline
+    if (p === '/data/cards.json') {   // sponsor list: fresh when online (its pictures saved), saved copy offline
       e.respondWith(timeout(fetch(req, { cache: 'no-cache' }), 3000).then(function (r) { if (r.ok) saveSponsors(r.clone()); return r; })
-        .catch(function () { return caches.open(SPON).then(function (c) { return c.match('/data/promos.json'); }).then(function (hit) { return hit || fetch(req); }); }));
+        .catch(function () { return caches.open(SPON).then(function (c) { return c.match('/data/cards.json'); }).then(function (hit) { return hit || fetch(req); }); }));
       return;
     }
     if (/^\/c\/.+\.json$/.test(p)) {

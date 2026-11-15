@@ -378,10 +378,53 @@ def save_sitemap(novels):
 PROMOS = 'https://share.groupchaton.com/promos.json'   # the sponsor list Share uses (same sponsors as the novels site)
 
 
+def selfhost(items):
+    """Makes every sponsor card come from our own address, so no filter list can match a foreign name: pictures are saved
+    as m/<hash>.<ext> (neutral names), the link goes through go/<n>/ (a plain redirect page of ours)."""
+    import hashlib
+    os.makedirs(os.path.join(ROOT, 'm'), exist_ok=True)
+
+    def grab(u):
+        if not u.startswith('http'):
+            return u
+        ext = (os.path.splitext(u.split('?')[0])[1] or '.jpg').lower()
+        if ext not in ('.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'):
+            ext = '.jpg'
+        name = hashlib.sha1(u.encode()).hexdigest()[:10] + ext
+        fp = os.path.join(ROOT, 'm', name)
+        if not os.path.exists(fp):
+            with urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=30) as r:
+                data = r.read()
+            with open(fp, 'wb') as f:
+                f.write(data)
+        return '/m/' + name
+    gdir = os.path.join(ROOT, 'go')
+    os.makedirs(gdir, exist_ok=True)
+    for i, x in enumerate(items):
+        try:
+            x['imgs'] = [grab(u) for u in x.get('imgs') or []]
+            if x.get('img_icon'):
+                x['img_icon'] = grab(x['img_icon'])
+        except Exception as e:
+            print('sponsor picture kept remote (%s)' % e)
+        dest = x.get('href', '')
+        if dest.startswith('http'):
+            d = os.path.join(gdir, str(i + 1))
+            os.makedirs(d, exist_ok=True)
+            page = ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow">'
+                    '<meta name="referrer" content="strict-origin-when-cross-origin"><title>Opening…</title>'
+                    '<meta http-equiv="refresh" content="0;url=%s"></head><body><p><a href="%s">Continue</a></p>'
+                    '<script>location.replace(%s)</script></body></html>') % (html.escape(dest, True), html.escape(dest, True), json.dumps(dest))
+            with open(os.path.join(d, 'index.html'), 'w', encoding='utf-8', newline='\n') as f:
+                f.write(page)
+            x['href'] = '/go/%d/' % (i + 1)
+            x['ext'] = 1
+
+
 def save_promos():
     """Copies the sponsor list into data/promos.json, so the app can show sponsor cards where an ad space stays
     empty (offline, blocked, no ad) and keep them for offline. Written only when it changed; on any error the old copy stays."""
-    fp = os.path.join(ROOT, 'data', 'promos.json')
+    fp = os.path.join(ROOT, 'data', 'cards.json')
     try:
         with urllib.request.urlopen(urllib.request.Request(PROMOS, headers=UA), timeout=30) as r:
             new = json.loads(r.read().decode('utf-8'))
@@ -391,6 +434,7 @@ def save_promos():
         for x in new['promos']:   # our own Ko-fi card, worded for readers of the novels (Share's wording is about groups)
             if 'ko-fi.com' in x.get('href', ''):
                 x['title'], x['line'] = 'Enjoying the chapters?', 'Every chapter here is proofread by hand. A coffee on Ko-fi helps keep them coming.'
+        selfhost(new['promos'])
         try:
             if json.load(open(fp, encoding='utf-8')) == new:
                 return

@@ -3,5 +3,6 @@ User-agent: *
 Allow: /
 Disallow: /c/
 Disallow: /t/
+Disallow: /go/
 Disallow: /search/
 Sitemap: https://novel.groupchaton.com/sitemap.xml
