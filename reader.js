@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.1bca93b';
+  var VERSION = '2026-11-15.d9c7400';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -1416,11 +1416,20 @@
   }
   /* Phones stop a page's speech when the screen locks unless the page is "playing media". A silent looping sound makes it count as a
      music player (lock-screen controls appear), and a 4-second check un-pauses or restarts the voice if the phone paused it. */
-  var SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+  var SILENT = '';
+  function silentUrl() {   // a real 3-second sound file (8 kHz, 16 bit) of near-silence: the first version had no samples, so a phone saw no sound playing at all
+    if (SILENT) return SILENT;
+    var n = 24000, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf), i;
+    function s(o, t) { for (var k = 0; k < t.length; k++) v.setUint8(o + k, t.charCodeAt(k)); }
+    s(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); s(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 8000, true); v.setUint32(28, 16000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); s(36, 'data'); v.setUint32(40, n * 2, true);
+    for (i = 0; i < n; i++) v.setInt16(44 + i * 2, i % 2 ? 1 : -1, true);   // +-1 of 32768: inaudible, but not digital zero
+    return (SILENT = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' })));
+  }
   function ttsKeep(on) {
     try {
       if (on) {
-        if (!TTS.aud) { TTS.aud = new Audio(SILENT); TTS.aud.loop = true; TTS.aud.setAttribute('playsinline', ''); }
+        if (!TTS.aud) { TTS.aud = new Audio(silentUrl()); TTS.aud.loop = true; TTS.aud.setAttribute('playsinline', ''); }
         TTS.aud.play().catch(function () {});
         if (!TTS.beat) TTS.beat = setInterval(function () {
           if (!TTS.on) return;
