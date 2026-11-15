@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.59802c4';
+  var VERSION = '2026-11-15.6b78948';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -730,6 +730,17 @@
       var prev = n && i > 0 ? n.chapters[i - 1] : null, next = n && i < n.chapters.length - 1 ? n.chapters[i + 1] : null;
       setMeta(c ? c[1] + (n ? ' · ' + n.title : '') : 'Chapter', c && n ? 'Read ' + n.title + ' ' + c[1] + ' in the GroupChatOn app.' : '', SELF + location.pathname);
       if (n) w.appendChild(el('nav', { 'class': 'crumb', 'aria-label': 'Breadcrumb' }, [el('a', { href: '/', text: 'Home' }), '›', el('a', { href: '/novel/' + n.id + '/', text: n.short || n.title })]));
+      if (n) {   // the novel's details card: beside the chapter on wide screens, a compact card above it on narrow ones
+        var last = n.chapters[n.chapters.length - 1];
+        w.appendChild(el('aside', { 'class': 'rd-side', 'aria-label': 'About this novel' }, [el('div', { 'class': 'rd-card' }, [
+          el('a', { href: '/novel/' + n.id + '/', 'aria-label': novelName(n) }, [cover(n, 'rd-cover', 320, true)]),
+          el('div', { 'class': 'rd-info' }, [
+            el('a', { 'class': 'rd-nv', href: '/novel/' + n.id + '/', text: novelName(n) }),
+            n.alt ? el('div', { 'class': 'rd-alt', text: n.alt }) : null,
+            n.genres && n.genres.length ? el('div', { 'class': 'rd-chips' }, n.genres.slice(0, 6).map(function (g) { return el('span', { text: g }); })) : null,
+            el('div', { 'class': 'rd-stat', text: plural(n.chapters.length, 'chapter') + (last ? ' · updated ' + fmtDate(last[2]) : '') }),
+            el('button', { type: 'button', 'class': 'btn btn-sm rd-chap', text: 'All chapters', onclick: function () { openToc(); } })])])]));
+      }
       var title = el('h1', { 'class': 'rd-title', text: c ? c[1] : 'Loading…' });
       var meta = el('div', { 'class': 'rd-meta' });
       var text = el('div', { 'class': 'rd-text' }, [el('div', { 'class': 'sk sk-line' }), el('div', { 'class': 'sk sk-line' }), el('div', { 'class': 'sk sk-line', style: 'width:60%' })]);
@@ -768,6 +779,10 @@
         meta.appendChild(el('span', { text: fmtDate(ch.d) }));
         if (ch.w) meta.appendChild(el('span', { text: Math.max(1, Math.round(ch.w / 230)) + ' min read' }));
         text.innerHTML = ch.h;
+        if (n) {   // the cover at the top of the saved chapter moves into the details card
+          var f0 = text.firstElementChild;
+          if (f0 && (f0.tagName === 'IMG' || (f0.tagName === 'A' && f0.querySelector('img') && !f0.textContent.trim()))) text.removeChild(f0);
+        }
         var credits = buildCredits(text);
         if (top) w.insertBefore(top, text);
         // in-article ads at paragraph breaks, about every 900 words, at most 3, never in the last 350 words
