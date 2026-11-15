@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.aedfc0a';
+  var VERSION = '2026-11-15.0d7e6ad';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -1324,7 +1324,10 @@
      The browser's own "Read aloud" stops at ads, cards and re-drawn parts of a page. This one reads only the story:
      one short piece at a time (long pieces get cut off by speech engines), highlights what is being read, scrolls along,
      goes on to the next chapter by itself, and keeps the screen awake. Voices come from the device (Edge has natural ones). */
-  var TTS = { src: store.get('gco-app-tts-src', 'rec'), mode: 'voice', fa: null, ftok: 0, ctx: null, parts: [], i: 0, on: false, open: false, bar: null, token: 0, resumeNext: false, wake: null, mark: null, guard: 0,
+  /* The recorded chapters (novel-audio releases) are made for the YouTube channel, not for this website: the site reads with the browser's own voices.
+     Set USE_RECORDED to true to offer them here again (the code for it is kept). */
+  var USE_RECORDED = false;
+  var TTS = { src: USE_RECORDED ? store.get('gco-app-tts-src', 'rec') : 'voice', mode: 'voice', fa: null, ftok: 0, ctx: null, parts: [], i: 0, on: false, open: false, bar: null, token: 0, resumeNext: false, wake: null, mark: null, guard: 0,
     rate: +store.get('gco-app-tts-rate', 1) || 1, voice: store.get('gco-app-tts-voice', ''), auto: store.get('gco-app-tts-auto', true) !== false };
   function ttsOk() { return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window; }
   function ttsChunks(text) {
@@ -1474,7 +1477,7 @@
     rate.value = String(TTS.rate); auto.checked = TTS.auto;
     rate.onchange = function () { TTS.rate = +rate.value; store.set('gco-app-tts-rate', TTS.rate); if (TTS.mode === 'file') TTS.fa.playbackRate = TTS.rate; else ttsRestartHere(); };
     voice.onchange = function () { TTS.voice = voice.value; store.set('gco-app-tts-voice', TTS.voice); ttsRestartHere(); };
-    src.value = TTS.src; src.hidden = !ttsOk();
+    src.value = TTS.src; src.hidden = !USE_RECORDED || !ttsOk();
     src.onchange = function () {
       var f = TTS.mode === 'file', pos = f && TTS.fa ? TTS.fa.currentTime : 0;
       TTS.src = src.value; store.set('gco-app-tts-src', TTS.src);
@@ -1541,7 +1544,7 @@
       if (ok) { TTS.on = false; ttsKeep(false); ttsMark(null); } else if (TTS.fa) TTS.fa.pause();
       ttsLook(); ttsPlay();
     };
-    if (TTS.src === 'voice' && ttsOk()) { if (TTS.fa) { TTS.ftok++; TTS.fa.pause(); } cb(false); } else ttsFile(cb);
+    if ((TTS.src === 'voice' || !USE_RECORDED) && ttsOk()) { if (TTS.fa) { TTS.ftok++; TTS.fa.pause(); } cb(false); } else ttsFile(cb);
   }
   /* The recorded chapter (release file of the novel-audio repository), when there is one. ONE audio element lives for the whole visit:
      a phone keeps playing it with the screen locked and lets it go on to the next chapter. Without a file the device voice reads. */
