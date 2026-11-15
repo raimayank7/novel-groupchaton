@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.a49620f';
+  var VERSION = '2026-11-15.1bca93b';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -1326,8 +1326,8 @@
      goes on to the next chapter by itself, and keeps the screen awake. Voices come from the device (Edge has natural ones). */
   /* The recorded chapters (novel-audio releases) are made for the YouTube channel, not for this website: the site reads with the browser's own voices.
      Set USE_RECORDED to true to offer them here again (the code for it is kept). */
-  var USE_RECORDED = false;
-  var TTS = { src: (function () { var v = store.get('gco-app-tts-src', 'voice'); return v === 'rec' && !USE_RECORDED ? 'voice' : v; })(), ntok: 0, nq: null, status: '', mode: 'voice', fa: null, ftok: 0, ctx: null, parts: [], i: 0, on: false, open: false, bar: null, token: 0, resumeNext: false, wake: null, mark: null, guard: 0,
+  var USE_RECORDED = false, USE_NEURAL = false;   // USE_NEURAL: the in-browser Piper voice (owner dropped it, 2026-11-15; code kept)
+  var TTS = { src: (function () { var v = store.get('gco-app-tts-src', 'voice'); return (v === 'rec' && !USE_RECORDED) || (v === 'neural' && !USE_NEURAL) ? 'voice' : v; })(), ntok: 0, nq: null, status: '', mode: 'voice', fa: null, ftok: 0, ctx: null, parts: [], i: 0, on: false, open: false, bar: null, token: 0, resumeNext: false, wake: null, mark: null, guard: 0,
     rate: +store.get('gco-app-tts-rate', 1) || 1, voice: store.get('gco-app-tts-voice', ''), auto: store.get('gco-app-tts-auto', true) !== false };
   function ttsOk() { return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window; }
   function ttsChunks(text) {
@@ -1482,11 +1482,11 @@
   function ttsBar() {
     if (TTS.bar) return TTS.bar;
     var speeds = [0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2], rate = el('select', { 'aria-label': 'Speed' }, speeds.map(function (s) { return el('option', { value: s, text: s + 'x' }); })),
-      src = el('select', { 'aria-label': 'Where the voice comes from' }, [USE_RECORDED ? el('option', { value: 'rec', text: 'Recorded voice' }) : null, el('option', { value: 'voice', text: 'Voices on my device' }), el('option', { value: 'neural', text: 'Natural voice (keeps playing when locked)' })]), voice = el('select', { 'aria-label': 'Voice' }), auto = el('input', { type: 'checkbox', id: 'tts-auto' });
+      src = el('select', { 'aria-label': 'Where the voice comes from' }, [USE_RECORDED ? el('option', { value: 'rec', text: 'Recorded voice' }) : null, el('option', { value: 'voice', text: 'Voices on my device' }), USE_NEURAL ? el('option', { value: 'neural', text: 'Natural voice (keeps playing when locked)' }) : null]), voice = el('select', { 'aria-label': 'Voice' }), auto = el('input', { type: 'checkbox', id: 'tts-auto' });
     rate.value = String(TTS.rate); auto.checked = TTS.auto;
     rate.onchange = function () { TTS.rate = +rate.value; store.set('gco-app-tts-rate', TTS.rate); if (TTS.mode === 'file' || TTS.mode === 'neural') TTS.fa.playbackRate = TTS.rate; else ttsRestartHere(); };
     voice.onchange = function () { TTS.voice = voice.value; store.set('gco-app-tts-voice', TTS.voice); ttsRestartHere(); };
-    src.value = TTS.src;
+    src.value = TTS.src; src.hidden = !USE_RECORDED && !USE_NEURAL;
     src.onchange = function () {
       var f = TTS.mode === 'file', pos = f && TTS.fa ? TTS.fa.currentTime : 0;
       TTS.src = src.value; store.set('gco-app-tts-src', TTS.src);
