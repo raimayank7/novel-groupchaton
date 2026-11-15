@@ -163,7 +163,18 @@ def post_body(page):
         return None
     custom = next((k for k in body.kids if isinstance(k, Node) and 'custom-post' in k.cls()), None)
     if custom is not None:
-        return custom
+        # the chapter's cover picture is a .separator block next to .custom-post in the post (after it on newer posts): keep it on top
+        covers = []
+        for k in body.kids:
+            if k is custom:
+                continue
+            if isinstance(k, Node) and 'separator' in k.cls() and any(isinstance(x, Node) and x.tag == 'img' for x in k.walk()):
+                covers.append(k)
+        if not covers:
+            return custom
+        wrap = Node('div', {}, None)
+        wrap.kids = covers[:1] + [custom]
+        return wrap
     # older posts: no .custom-post; leave out the button rows and the old Table of Content widgets
     for n in list(body.walk()):
         c = n.cls()
