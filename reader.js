@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.c529bac';
+  var VERSION = '2026-11-15.07308e9';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -1445,7 +1445,7 @@
     if ('mediaSession' in navigator) try { navigator.mediaSession.playbackState = 'playing'; } catch (e) {}
     ttsSpeak();
   }
-  function ttsToggle() { if (TTS.on) ttsPause(); else ttsPlay(); }
+  function ttsToggle() { if (TTS.probing) return; if (TTS.on) ttsPause(); else ttsPlay(); }
   function ttsSkip(dir) {
     if (TTS.mode === 'file') { TTS.fa.currentTime = Math.max(0, TTS.fa.currentTime + (dir > 0 ? 30 : -15)); return; }
     var j = TTS.i;
@@ -1510,7 +1510,7 @@
   }
   function ttsOpen() {
     if (!TTS.ctx) return;
-    TTS.open = true;
+    TTS.open = true; TTS.probing = true;
     TTS.parts = ttsBuild(TTS.ctx.el);
     ttsBar();
     TTS.i = ttsFirstVisible();
@@ -1519,7 +1519,13 @@
     } catch (e) {}
     ttsFile(function (ok) {
       if (!ok && !ttsOk()) { toast('This chapter has no recording yet, and this browser cannot read it aloud.'); ttsClose(); return; }
-      TTS.mode = ok ? 'file' : 'voice'; ttsLook(); ttsPlay();
+      TTS.probing = false;
+      TTS.mode = ok ? 'file' : 'voice';
+      // only ONE of the two may sound: the recording, or the device voice
+      TTS.token++; clearTimeout(TTS.guard);
+      try { window.speechSynthesis.cancel(); } catch (e) {}
+      if (ok) { TTS.on = false; ttsKeep(false); ttsMark(null); } else if (TTS.fa) TTS.fa.pause();
+      ttsLook(); ttsPlay();
     });
   }
   /* The recorded chapter (release file of the novel-audio repository), when there is one. ONE audio element lives for the whole visit:
