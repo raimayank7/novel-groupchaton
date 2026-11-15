@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.ad89753';
+  var VERSION = '2026-11-15.2c406ec';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -781,7 +781,13 @@
         text.innerHTML = ch.h;
         if (n) {   // the cover at the top of the saved chapter moves into the details card
           var f0 = text.firstElementChild;
-          if (f0 && (f0.tagName === 'IMG' || (f0.tagName === 'A' && f0.querySelector('img') && !f0.textContent.trim()))) text.removeChild(f0);
+          if (f0 && (f0.tagName === 'IMG' || (f0.tagName === 'A' && f0.querySelector('img') && !f0.textContent.trim()))) {
+            var pic = f0.tagName === 'IMG' ? f0 : f0.querySelector('img'), cv = $('.rd-cover', w);
+            if (pic && cv && pic.getAttribute('src')) {   // every chapter has its own picture: the card shows it (the novel's cover stays when a chapter has none)
+              cv.src = pic.getAttribute('src').replace(/\/(s\d+|w\d+)(-[a-z]+)*\/([^\/]+)$/, '/w420/$3'); cv.classList.add('is-ch');
+            }
+            text.removeChild(f0);
+          }
         }
         var credits = buildCredits(text);
         if (top) w.insertBefore(top, text);
