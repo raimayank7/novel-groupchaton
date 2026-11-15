@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.e31d92d';
+  var VERSION = '2026-11-15.2fb45f8';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -804,7 +804,7 @@
         if (endAd) w.insertBefore(endAd, bar);
         if (credits) w.insertBefore(credits, bar);
         w.insertBefore(endNav(n, next, prev), bar);
-        w.insertBefore(chapTools(n, ch, r.key), bar);
+        w.insertBefore(chapTools(n, ch, r.key, text), bar);
         if (n) {
           var p0 = posOf(r.key);
           setHist(n, c, p0);
@@ -1150,7 +1150,7 @@
     });
     return form;
   }
-  function openReport(ctx) {
+  function openReport(ctx, quote) {
     var form = formBox([
       { key: 'kind', label: 'What kind of mistake?', type: 'select', required: true, options: ['Typo', 'Wrong name or word', 'Missing or repeated text', 'Other'] },
       { key: 'quote', label: 'The text with the mistake', type: 'textarea', rows: 3, hint: 'Copy a few words so we can find it.' },
@@ -1162,12 +1162,37 @@
         return { subject: '[Report] ' + v.kind + ' · ' + ctx.novel + ' · ' + ctx.title,
           message: ['[Report] ' + v.kind, 'Where: ' + ctx.novel + ' · ' + ctx.title, ctx.url, '', 'Text: ' + (v.quote || '-'), '', 'Should be: ' + (v.fix || '-')].join('\n') };
       }, 'Thank you! We will fix it soon.');
-    var s = sheet('Report a mistake', form);
-    setTimeout(function () { var q = $('textarea', form); if (q) q.focus(); }, 280);
+    var s = sheet('Report a mistake', form), areas = $$('textarea', form);
+    if (quote && areas[0]) areas[0].value = quote;
+    setTimeout(function () { var q = quote ? areas[1] : areas[0]; if (q) q.focus(); }, 280);
     return s;
   }
-  function chapTools(n, ch, key) {
+  /* select a line in a chapter: a "Report typo" button appears (it opens the report with that text filled in) */
+  var selCtx = null, selBtn = null, selPicked = '', selT;
+  function setupSelection() {
+    if (selBtn) return;
+    selBtn = el('button', { type: 'button', 'class': 'sel-report', hidden: 'hidden', text: 'Report typo' });
+    doc.body.appendChild(selBtn);
+    selBtn.addEventListener('mousedown', function (e) { e.preventDefault(); });   // keep the selection when the button is pressed
+    selBtn.addEventListener('click', function () {
+      var q = selPicked;
+      selBtn.hidden = true;
+      try { window.getSelection().removeAllRanges(); } catch (err) {}
+      if (selCtx) openReport(selCtx.ctx, q);
+    });
+    doc.addEventListener('selectionchange', function () {
+      clearTimeout(selT);
+      selT = setTimeout(function () {
+        var sel = window.getSelection(), text = sel ? String(sel).replace(/\s+/g, ' ').trim() : '';
+        var inside = selCtx && route.name === 'read' && sel && sel.rangeCount && selCtx.el.contains(sel.getRangeAt(0).commonAncestorContainer);
+        if (inside && text.length > 1 && text.length <= 800 && !$('.sheet.is-open')) { selPicked = text; selBtn.hidden = false; }
+        else if (!text || !inside) selBtn.hidden = true;
+      }, 180);
+    });
+  }
+  function chapTools(n, ch, key, textEl) {
     var url = SELF + '/read/' + key + '/', title = ch.t || key, novel = n ? novelName(n) : 'GroupChatOn';
+    if (textEl) { selCtx = { el: textEl, ctx: { novel: novel, title: title, url: url } }; setupSelection(); }
     var thread = el('div', { id: 'disqus_thread' }), note = el('p', { 'class': 'muted fm-note', text: 'Comments are run by Disqus. Please be kind, mark spoilers and do not share links to pirated copies.' });
     var cbtn = el('button', { type: 'button', 'class': 'btn', text: 'Show comments' });
     cbtn.addEventListener('click', function () {
