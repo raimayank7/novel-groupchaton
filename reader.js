@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.8c69a40';
+  var VERSION = '2026-11-15.ef5fa42';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -749,6 +749,11 @@
             n.genres && n.genres.length ? el('div', { 'class': 'rd-chips' }, n.genres.slice(0, 6).map(function (g) { return el('span', { text: g }); })) : null,
             el('div', { 'class': 'rd-stat', text: plural(n.chapters.length, 'chapter') + (last ? ' · updated ' + fmtDate(last[2]) : '') }),
             el('button', { type: 'button', 'class': 'btn btn-sm rd-chap', text: 'All chapters', onclick: function () { openToc(); } })])])]));
+      }
+      if (window.matchMedia && matchMedia('(min-width:1320px)').matches) {   // wide screens: a sponsor card stays in view on the right of the chapter
+        var railBox = el('div', { 'class': 'pk-slot' });
+        w.appendChild(el('aside', { 'class': 'rd-rail', 'aria-label': 'Sponsored' }, [railBox]));
+        promoFill(railBox);
       }
       var title = el('h1', { 'class': 'rd-title', text: c ? c[1] : 'Loading…' });
       var meta = el('div', { 'class': 'rd-meta' });

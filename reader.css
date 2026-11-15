@@ -264,3 +264,15 @@ html[data-align='justify'] .rd-text p{text-align:justify;hyphens:auto}
 .page-doc .doc-body a:not(.btn){color:var(--accent)}
 .sel-report{position:fixed;left:0;right:0;margin:0 auto;width:fit-content;top:calc(var(--top,56px) + 12px);z-index:65;display:inline-flex;align-items:center;padding:11px 18px;border:0;border-radius:999px;background:var(--ink);color:var(--bg);font:600 14px/1 var(--ui);box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer}
 .sel-report[hidden]{display:none}
+.rd-rail{display:none}
+@media (min-width:1320px){
+  .rd-rail{display:block;position:absolute;left:calc(100% + 20px);top:18px;bottom:40px;width:268px}
+  .rd-rail .pk-slot{position:sticky;top:84px;margin:0;width:auto}
+  .rd-rail .pk-slot.is-promo::before{display:block;text-align:left;margin-bottom:8px}
+  .rd-rail .pk-slot .promo-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:14px;border-style:solid;background:var(--surface-2)}
+  .rd-rail .pk-slot .promo-card > :first-child{grid-row:auto}
+  .rd-rail .pk-slot .promo-card img:not(.promo-ic){width:100%;max-width:100%;height:auto;aspect-ratio:auto;object-fit:contain;border-radius:12px}
+  .rd-rail .pk-slot .promo-card .pk-lbl{display:none}
+  .rd-rail .pk-slot .promo-card em{background:var(--accent);color:var(--accent-ink);padding:9px 18px;border-radius:999px;justify-self:auto}
+  .rd-rail .pk-slot .promo-card em::after{content:none}
+}
