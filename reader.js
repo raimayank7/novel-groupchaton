@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.87f3a75';
+  var VERSION = '2026-11-15.a6905d2';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -1401,7 +1401,7 @@
   function ttsPause() {
     TTS.on = false; TTS.token++; clearTimeout(TTS.guard);
     try { window.speechSynthesis.cancel(); } catch (e) {}
-    ttsLabels(); ttsWake(false);
+    ttsLabels(); ttsWake(false); ttsKeep(false);
     if ('mediaSession' in navigator) try { navigator.mediaSession.playbackState = 'paused'; } catch (e) {}
   }
   function ttsWake(on) {
@@ -1410,9 +1410,30 @@
       if (!on && TTS.wake) { TTS.wake.release(); TTS.wake = null; }
     } catch (e) {}
   }
+  /* Phones stop a page's speech when the screen locks unless the page is "playing media". A silent looping sound makes it count as a
+     music player (lock-screen controls appear), and a 4-second check un-pauses or restarts the voice if the phone paused it. */
+  var SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+  function ttsKeep(on) {
+    try {
+      if (on) {
+        if (!TTS.aud) { TTS.aud = new Audio(SILENT); TTS.aud.loop = true; TTS.aud.setAttribute('playsinline', ''); }
+        TTS.aud.play().catch(function () {});
+        if (!TTS.beat) TTS.beat = setInterval(function () {
+          if (!TTS.on) return;
+          var ss = window.speechSynthesis;
+          if (ss.paused) ss.resume();
+          else if (!ss.speaking && !ss.pending) ttsSpeak();
+          if (TTS.aud && TTS.aud.paused) TTS.aud.play().catch(function () {});
+        }, 4000);
+      } else {
+        if (TTS.aud) TTS.aud.pause();
+        clearInterval(TTS.beat); TTS.beat = 0;
+      }
+    } catch (e) {}
+  }
   function ttsPlay() {
     if (!TTS.ctx) return;
-    TTS.on = true; ttsLabels(); ttsWake(true);
+    TTS.on = true; ttsLabels(); ttsWake(true); ttsKeep(true);
     if ('mediaSession' in navigator) try { navigator.mediaSession.playbackState = 'playing'; } catch (e) {}
     ttsSpeak();
   }
