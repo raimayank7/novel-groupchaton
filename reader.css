@@ -289,3 +289,5 @@ html[data-align='justify'] .rd-text p{text-align:justify;hyphens:auto}
 .tts-opts{flex-wrap:wrap}
 .tts-opts select{max-width:42%}
 .tts .icon-btn{flex:none}
+
+.tts-tip{margin:6px 2px 0;font:400 12px/1.4 var(--ui);color:var(--muted)}

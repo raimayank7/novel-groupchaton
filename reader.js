@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-15.f477ca6';
+  var VERSION = '2026-11-18.ff21ebd';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -1353,7 +1353,7 @@
     });
     return parts;
   }
-  function ttsVoices() { return (window.speechSynthesis.getVoices() || []).filter(function (v) { return /^en/i.test(v.lang); }); }
+  function ttsVoices() { var all = window.speechSynthesis.getVoices() || [], en = all.filter(function (v) { return /^en/i.test(v.lang); }); return en.length ? en : all; }
   function ttsPick() {
     var vs = ttsVoices(), by = function (re) { return vs.filter(function (v) { return re.test(v.name); })[0]; }, pick;
     if (TTS.voice) pick = vs.filter(function (v) { return v.name === TTS.voice; })[0];
@@ -1508,10 +1508,16 @@
     function fill() {
       var vs = ttsVoices(), cur = (ttsPick() || {}).name;
       voice.innerHTML = '';
-      vs.forEach(function (v) { voice.appendChild(el('option', { value: v.name, text: v.name.replace(/^Microsoft\s+/, '').replace(/\s*-\s*English.*$/, '') + (/natural|online/i.test(v.name) ? ' ★' : '') })); });
+      vs.forEach(function (v, k) {
+        var nm = v.name.replace(/^Microsoft\s+/, '').replace(/\s*-\s*English.*$/, '');
+        if (/-x-|#|^[a-z]{2,3}[-_][a-z]{2,4}$/i.test(nm)) nm = 'English ' + (v.lang || '').replace('_', '-').replace(/^en-?/i, '').toUpperCase() + ' voice ' + (k + 1);   // phones list codes like en-us-x-iom-local
+        voice.appendChild(el('option', { value: v.name, text: nm + (/natural|online/i.test(v.name) ? ' ★' : '') }));
+      });
       if (cur) voice.value = cur;
-      voice.hidden = vs.length < 2;
+      voice.hidden = vs.length < 1;
+      if (tip) tip.hidden = vs.length > 3;
     }
+    var tip = el('p', { 'class': 'tts-tip', text: 'Want more voices? Your phone decides which voices are available. Android: Settings > System > Languages > Text-to-speech output > install a voice. iPhone: Settings > Accessibility > Spoken Content > Voices.' });
     fill();
     try { window.speechSynthesis.addEventListener('voiceschanged', fill); } catch (e) {}
     TTS.bar = el('div', { 'class': 'tts', role: 'region', 'aria-label': 'Listen to this chapter' }, [
@@ -1522,7 +1528,7 @@
         el('span', { 'class': 'tts-title' }),
         el('button', { type: 'button', 'class': 'icon-btn', 'aria-label': 'Close the player', html: icon('x'), onclick: ttsClose })]),
       el('div', { 'class': 'tts-row tts-seekrow', hidden: true }, [el('input', { type: 'range', 'class': 'tts-seek', min: 0, max: 100, value: 0, 'aria-label': 'Position in the chapter' }), el('span', { 'class': 'tts-time' })]),
-      el('div', { 'class': 'tts-row tts-opts' }, [src, rate, voice, el('label', { 'class': 'tts-auto', 'for': 'tts-auto' }, [auto, 'Next chapter'])])]);
+      el('div', { 'class': 'tts-row tts-opts' }, [src, rate, voice, el('label', { 'class': 'tts-auto', 'for': 'tts-auto' }, [auto, 'Next chapter'])]), tip]);
     var sk = $('.tts-seek', TTS.bar);
     sk.oninput = function () { TTS.drag = true; };
     sk.onchange = function () { TTS.drag = false; if (TTS.fa) TTS.fa.currentTime = +sk.value; };
