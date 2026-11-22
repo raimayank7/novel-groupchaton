@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-18.ff21ebd';
+  var VERSION = '2026-11-22.a7f4609';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
@@ -568,6 +568,7 @@
       el('div', { 'class': 'links', style: 'justify-content:center' }, [
         el('a', { href: '/about/', text: 'About' }), el('a', { href: '/privacy-policy/', text: 'Privacy policy' }),
         el('a', { href: '/disclaimer/', text: 'Disclaimer' }), el('a', { href: '/contact/', text: 'Contact' })]),
+      el('p', { 'class': 'soc', html: '<b>Follow us</b> <a class=\'si fb\' href=\'https://www.facebook.com/groupchaton\' rel=\'noopener\' target=\'_blank\' aria-label=\'Facebook\' title=\'Facebook\'><svg aria-hidden=\'true\' viewBox=\'0 0 24 24\'><path d=\'M14 8h3V4h-3a4 4 0 0 0-4 4v2H7v4h3v8h4v-8h3l1-4h-4V8z\'/></svg></a> <a class=\'si x\' href=\'https://www.x.com/groupchaton\' rel=\'noopener\' target=\'_blank\' aria-label=\'X (Twitter)\' title=\'X (Twitter)\'><svg aria-hidden=\'true\' viewBox=\'0 0 24 24\'><path d=\'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z\'/></svg></a> <a class=\'si yt\' href=\'https://www.youtube.com/@BingeNovels\' rel=\'noopener\' target=\'_blank\' aria-label=\'YouTube channel BingeNovels\' title=\'YouTube channel BingeNovels\'><svg aria-hidden=\'true\' viewBox=\'0 0 24 24\'><path d=\'M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6z\'/></svg></a>' }),
       el('p', { html: '© ' + new Date().getFullYear() + ' GroupChatOn. All rights reserved. · Designed &amp; Developed by: <a href="https://www.niveshsahayak.in/" rel="noopener" target="_blank">Nivesh Sahayak</a>' })]);
   }
   // Blogger serves any size of a picture: ask for a small one instead of the 1600px original
