@@ -293,3 +293,29 @@ html[data-align='justify'] .rd-text p{text-align:justify;hyphens:auto}
 .tts-tip{margin:6px 2px 0;font:400 12px/1.4 var(--ui);color:var(--muted)}
 .foot .soc{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:0 16px;margin:10px 0 0}.foot .soc a{display:inline-flex;align-items:center;min-height:44px}
 .foot .soc{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.foot .soc b{margin-right:4px}.foot .soc a.si{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;min-height:44px;padding:0;border-radius:50%;border:1px solid rgba(128,128,128,.45);color:inherit;text-decoration:none;background:transparent;transition:background .15s,color .15s,border-color .15s,transform .15s}.foot .soc a.si svg{width:20px;height:20px;fill:currentColor}.foot .soc a.si:hover,.foot .soc a.si:focus-visible{color:#fff;border-color:transparent;transform:translateY(-2px)}.foot .soc a.si.fb:hover,.foot .soc a.si.fb:focus-visible{background:#1877f2}.foot .soc a.si.x:hover,.foot .soc a.si.x:focus-visible{background:#111}.foot .soc a.si.yt:hover,.foot .soc a.si.yt:focus-visible{background:#f00}.foot .soc{justify-content:center;margin:10px 0 0}
+
+/* ===================== phone layout (P4, 2026-11-26): up to 600 px only =====================
+   The app already has a bottom tab bar and a reading toolbar at thumb height. This block adds:
+   the slim novel card above a chapter (the phone rule above was overridden by later rules), the chapter
+   finder that stays in reach while scrolling a long list, and 44 px taps everywhere. Wider screens unchanged. */
+@media (max-width:600px){
+  .rd-card{padding:10px;gap:12px;align-items:center}
+  .rd-card .rd-cover{width:64px}
+  .rd-alt,.rd-chips{display:none}
+  .rd-nv{font-size:15px}
+  .rd-stat{margin:6px 0 8px}
+  .rd-chap,.btn-sm{min-height:44px}
+  .crumb a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:0 4px}
+  .rd-nv{display:flex;align-items:center;min-height:44px}
+  .reader .crumb{margin-bottom:0}
+  .rd-bar .icon-btn{min-width:48px;height:48px}
+  .toc-tools{position:sticky;top:var(--top);z-index:5;margin:0 -4px 12px;padding:8px 4px;background:var(--bg)}
+  .toc-tools .btn{min-height:46px}
+  .foot a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px}
+  .foot .ns-credit{min-height:44px}
+  .hero > .actions .btn{min-height:48px}
+}
+@media (max-width:360px){
+  .rd-bar{gap:0;padding-left:4px;padding-right:4px}
+  .rd-bar .icon-btn{min-width:44px;padding:0 6px}
+}

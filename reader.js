@@ -7,7 +7,7 @@
    Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE. */
 (function () {
   'use strict';
-  var VERSION = '2026-11-22.a7f4609';
+  var VERSION = '2026-11-26.84de1bd';
   var WWW = 'https://www.groupchaton.com', INF = 'https://infinity.groupchaton.com';
   var SELF = 'https://novel.groupchaton.com';
   var AD_CLIENT = 'ca-pub-5935207738848708', ADS = { top: '2358914532', inArticle: '2020003182', end: '2358914532', home: '3496736383' };
