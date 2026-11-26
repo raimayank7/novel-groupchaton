@@ -49,6 +49,9 @@ jobs:
           git pull --rebase --autostash
           git push
           echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: Page files for every novel and chapter
+        # /novel/<id>/ and /read/<key>/ get a real index.html (status 200, own title + text) instead of 404.html
+        run: python -X utf8 scripts/pages.py
       - uses: actions/upload-pages-artifact@v4
         with:
           path: .
