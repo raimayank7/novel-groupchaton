@@ -1,6 +1,6 @@
 # Stamps a new version on the GroupChatOn app after you change index.html, reader.js, reader.css or sw.js:
 #   - version = today's date + a short fingerprint of those files (reader.js VERSION, sw.js VERSION, ?v= in index.html and sw.js)
-#   - 404.html = a copy of index.html (GitHub Pages shows it for /novel/…, /read/… so every app address opens the app)
+#   - 404.html = a copy of index.html (any other address opens the app); /novel/ and /read/ get real page files from scripts/pages.py at publish time
 #   - t/<id>/index.html = small pages that send the old Infinity App tool addresses to infinity.groupchaton.com
 # Run:  python -X utf8 scripts/release.py      then commit and push.
 # Designed & Developed by Nivesh Sahayak (https://www.niveshsahayak.in/). All rights reserved: see LICENSE.
